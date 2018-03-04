@@ -29,46 +29,81 @@ class Corpus:
     
     """
     def __init__(self, source, target, fname_pattern='{author}_{title}'):
-        """Example of docstring on the __init__ method.
+        """Instatiates :class:`Corpus`.
 
-        The __init__ method may be documented in either the class level
-        docstring, or as a docstring on the __init__ method itself.
-
-        Either form is acceptable, but the two should not be mixed. Choose one
-        convention to document the __init__ method and be consistent with it.
-
-        Note:
-            Do not include the `self` parameter in the ``Args`` section.
+        This method instatiates all objects of the class :class:`Corpus`. There
+        are only few arguments to pass. Have a look at the section below for
+        more details.
 
         Args:
-            param1 (str): Description of `param1`.
-            param2 (:obj:`int`, optional): Description of `param2`. Multiple
-                lines are supported.
-            param3 (:obj:`list` of :obj:`str`): Description of `param3`.
+            source (str): The path to the corpus directory, e.g.
+                ``/tmp/corpora/test_corpus``.
+            target (str): The path to the output directory, e.g.
+                ``/tmp/corpora/formatted_test_corpus``.
+            fname_pattern (str, optional): The pattern of the corpus's
+                filenames. Metadata wil be extracted from the filenames based on
+                this pattern. If the pattern is ``None`` or does not match the
+                structure, only the basename (without suffix) will be considered
+                as metadata. An example for the filename ``parsons_social.txt``
+                would be ``{author}_{title}``. ``parsons`` will be recognized as
+                author, ``social`` as the title.
 
         """
         def stream_corpus(path, fname_pattern):
             p = Path(path)
             for file in p.glob('*.txt'):
                 with file.open('r', encoding='utf-8') as document:
-                    yield fname2metadata(str(file), fname_pattern), document.read()
+                    yield fname2metadata(str(file), fname_pattern),
+                          document.read()
         self.corpus = stream_corpus(source, fname_pattern)
         self.target = Path(target)
         if not self.target.exists():
             self.target.mkdir()
     
     def to_json(self, onefile=True):
-        """Class methods are similar to regular functions.
+        """Converts the corpus to JSON.
 
-        Note:
-            Do not include the `self` parameter in the ``Args`` section.
+        **JSON** (JavaScript Object Notation) is a lightweight data-interchange
+        format. It is easy for humans to read and write. It is easy for machines
+        to parse and generate. For more information on this format, follow
+        `this link <https://www.json.org/index.html>`_.
+
+        This method converts your plain text corpus to JSON. Besides the content
+        of your documents, metadata will be included in the JSON. Have a look at
+        :meth:`__init__` for proper metadata recognition.
+        
+        You have two options:
+            1. Write the whole corpus into one single file. In this case, set
+                :arg:`onefile` to True. An example could be:
+                
+                ```json
+                {"parsons_system":
+                    {"author": "parsons",
+                     "title": "system",
+                     "text": "Culture, Personality and the Social Systems..."},
+                 "parsons_action":
+                    {"author": "parsons",
+                     "title": "action",
+                     "text": "The Sick Role and the Role of the Physician..."}
+                 }
+                ```
+            
+            2. Write one file for each document. In this case, set
+                :arg:`onefile` to False. An example for the first document could
+                be:
+                
+                ```json
+                {"author": "parsons",
+                 "title": "system",
+                 "text": "Culture, Personality and the Social Systems..."}
+                ```
 
         Args:
-            param1: The first parameter.
-            param2: The second parameter.
+            onefile (bool): If True, write the whole corpus in one file.
+                Otherwise each document will be written to single files.
 
         Returns:
-            True if successful, False otherwise.
+            None, but writes the formatted corpus to disk.
 
         """
         if onefile:
