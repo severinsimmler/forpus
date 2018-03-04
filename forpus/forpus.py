@@ -1,5 +1,5 @@
 from pathlib import Path
-from metadata_toolbox.utils import fname2metadata, metadata2fname
+from metadata_toolbox.utils import fname2metadata
 import json
 
 class Corpus:
