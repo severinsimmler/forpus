@@ -13,6 +13,14 @@ class Corpus:
         self.target = target
     
     def to_json(self, onefile=True):
+        """Short description
+        
+        Args:
+            onefile (bool): Description.
+        
+        Returns:
+            None.
+        """
         if onefile:
             corpus_json = dict()
         for metadata, text in self.corpus:
