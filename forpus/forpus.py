@@ -3,19 +3,29 @@ from metadata_toolbox.utils import fname2metadata, metadata2fname
 import json
 
 class Corpus:
-    """The summary line for a class docstring should fit on one line.
+    """Convert a plain text corpus to a NLP-specific corpus format.
     
-    If the class has public attributes, they may be documented here
-    in an ``Attributes`` section and follow the same formatting as a
-    function's ``Args`` section. Alternatively, attributes may be documented
-    inline with the attribute's declaration (see __init__ method below).
-
-    Properties created with the ``@property`` decorator should be documented
-    in the property's getter method.
+    Instantiate this class, if you have a directory of plain text files (.txt),
+    and want to convert the content of those files into a NLP-specific corpus
+    format. In most cases, each NLP tool uses its own idiosyncratic input
+    format. This class helps you to convert a corpus very easy to the desired
+    format.
+    
+    This class does not store the whole corpus at once in RAM, which is useful
+    when handling very large corpora. Documents are streamed from disk in a lazy
+    fashion, one document at a time, processed, and closed before the next one.
+    Have a look at :meth:`__init__`, if you are interested in how this is
+    implemented.
+    
+    There is a plenty of formats available:
+        * JSON, see :meth:`to_json`.
 
     Attributes:
-        attr1 (str): Description of `attr1`.
-        attr2 (:obj:`int`, optional): Description of `attr2`.
+        corpus (:obj:`iterable`): An iterable of (``metadata``, ``text``).
+            ``metadata`` is a pandas DataFrame containing metadata extracted
+            from the filename. ``text`` is the content of the file as string.
+        target (str): The target directory. If it does not exist, it will be
+            created.
     
     """
     def __init__(self, source, target, fname_pattern='{author}_{title}'):
