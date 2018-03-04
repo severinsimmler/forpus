@@ -1,5 +1,5 @@
 from pathlib import Path
-from metadata_toolbox import utils as mdt
+from metadata_toolbox.utils import fname2metadata, metadata2fname
 import json
 
 class Corpus:
@@ -8,7 +8,7 @@ class Corpus:
             p = Path(path)
             for file in p.glob('*.txt'):
                 with file.open('r', encoding='utf-8') as document:
-                    yield mdt.fname2metadata(str(file), fname_pattern), document.read()
+                    yield fname2metadata(str(file), fname_pattern), document.read()
         self.corpus = stream_corpus(source, fname_pattern)
         self.target = target
     
