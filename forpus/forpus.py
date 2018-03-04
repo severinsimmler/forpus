@@ -7,3 +7,5 @@ class Corpus:
             for file in p.glob('*.txt'):
                 with file.open() as document:
                     yield document.read()
+        self.corpus = stream_corpus(source)
+        self.target = target
