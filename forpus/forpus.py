@@ -19,6 +19,23 @@ class Corpus:
     
     There is a plenty of formats available:
         * JSON, see :meth:`to_json`.
+    
+    Once instantiated, you can convert the corpus **only once**. The concept of
+    this library is to instantiate **one class for each target format**. For
+    example:
+    
+    ```python
+    CorpusJSON = Corpus(source='corpus', target='corpus_json')
+    CorpusJSON.to_json()
+    
+    CorpusTEI = Corpus(source='corpus', target='corpus_tei')
+    CorpusTEI.to_tei()
+    
+    # and so on...
+    ```
+    
+    This should help you to keep an overview and avoid storing all kind of
+    different corpus formats in the same directory.
 
     Attributes:
         corpus (:obj:`iterable`): An iterable of (``metadata``, ``text``).
