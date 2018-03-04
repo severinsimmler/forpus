@@ -11,8 +11,10 @@ setup(
     author_email='severin.simmler@stud-mail.uni-wuerzburg.de',
 
     classifiers=[
+        'Natural Language :: English',
         'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6'
     ],
     packages=['forpus']
     # install_requires
