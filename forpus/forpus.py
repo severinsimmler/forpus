@@ -19,6 +19,7 @@ class Corpus:
     
     There is a plenty of formats available:
         * JSON, see :meth:`to_json`.
+        * TEI XML, see :meth:`to_tei`.
     
     Once instantiated, you can convert the corpus **only once**. The concept of
     this library is to instantiate **one class for each target format**. For
