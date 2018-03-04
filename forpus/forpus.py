@@ -53,7 +53,9 @@ class Corpus:
                 with file.open('r', encoding='utf-8') as document:
                     yield fname2metadata(str(file), fname_pattern), document.read()
         self.corpus = stream_corpus(source, fname_pattern)
-        self.target = target
+        self.target = Path(target)
+        if not self.target.exists():
+            self.target.mkdir()
     
     def to_json(self, onefile=True):
         """Class methods are similar to regular functions.
