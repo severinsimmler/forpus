@@ -13,8 +13,8 @@ class Corpus:
     
     This class does not store the whole corpus at once in RAM, which is useful
     when handling very large corpora. Documents are streamed from disk in a lazy
-    fashion, one document at a time, processed, and closed before the next one.
-    Have a look at :meth:`__init__`, if you are interested in how this is
+    fashion, one document at a time, being processed, and closed before the next
+    one. Have a look at :meth:`__init__`, if you are interested in how this is
     implemented.
     
     There is a plenty of formats available:
