@@ -7,6 +7,6 @@ class Corpus:
             p = Path(path)
             for file in p.glob('*.txt'):
                 with file.open() as document:
-                    yield mdt.fname2metadata(file, fname_pattern), document.read()
+                    yield mdt.fname2metadata(str(file), fname_pattern), document.read()
         self.corpus = stream_corpus(source, fname_pattern)
         self.target = target
