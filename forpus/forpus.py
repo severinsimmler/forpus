@@ -24,8 +24,8 @@ class Corpus:
         corpus (:obj:`iterable`): An iterable of (``metadata``, ``text``).
             ``metadata`` is a pandas DataFrame containing metadata extracted
             from the filename. ``text`` is the content of the file as string.
-        target (str): The target directory. If it does not exist, it will be
-            created.
+        target (:obj:`pathlib.PosixPath`): The target directory. If it does
+            not exist, it will be created.
     
     """
     def __init__(self, source, target, fname_pattern='{author}_{title}'):
