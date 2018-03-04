@@ -53,8 +53,8 @@ class Corpus:
             p = Path(path)
             for file in p.glob('*.txt'):
                 with file.open('r', encoding='utf-8') as document:
-                    yield fname2metadata(str(file), fname_pattern),
-                          document.read()
+                    fname = str(file)
+                    yield fname2metadata(fname, fname_pattern), document.read()
         self.corpus = stream_corpus(source, fname_pattern)
         self.target = Path(target)
         if not self.target.exists():
