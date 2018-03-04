@@ -7,7 +7,8 @@
 It is called Forpus, because you are **for**matting a cor**pus**, but this is also a genus of parrot in the family Psittacidae.
 
 This library supports **conversions** to
-* JSON
+* [JSON](https://www.json.org/index.html)
+* [TEI XML](http://www.tei-c.org/index.xml)
 
 ## Resources
 * [Forpus website](linktoghpages)
