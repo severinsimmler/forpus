@@ -16,4 +16,5 @@ setup(
     ],
     packages=['forpus']
     # install_requires
+    keywords=['corpora', 'text mining', 'natural language processing']
 )
