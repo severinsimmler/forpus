@@ -13,7 +13,7 @@ class Corpus:
         self.target = target
     
     def to_json(self, onefile=True):
-        """Short description
+        """Short description.
         
         Args:
             onefile (bool): Description.
