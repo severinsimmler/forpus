@@ -9,8 +9,8 @@
 ```bash
 $ git clone -b testing git@github.com:severinsimmler/forpus
 $ cd forpus
-$ mkvirtualenv Topics      # if you use virtualenvwrapper
-$ workon Topics            # if you use virtualenvwrapper
+$ mkvirtualenv forpus      # if you use virtualenvwrapper
+$ workon forpus            # if you use virtualenvwrapper
 $ pip install -r requirement-dev.txt
 ```
 
