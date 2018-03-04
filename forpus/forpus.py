@@ -140,3 +140,6 @@ class Corpus:
             p = Path(self.target, 'corpus.json')
             with p.open('w', encoding='utf-8') as file:
                 json.dump(corpus_json, file)
+
+    def to_tei(self):
+        # cf. http://adrien.barbaresi.eu/blog/parsing-converting-lxml-html-tei.html
