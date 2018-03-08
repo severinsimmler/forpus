@@ -185,7 +185,7 @@ class Corpus(object):
         for meta, text in self.corpus:
             tokens = tokenizer(text)
             if preprocessing:
-                for func in preprocessing:
+                for func in preprocessing.values():
                     tokens = func(tokens)
             frequencies = Counter(tokens)
             instance = [str(len(frequencies))]
