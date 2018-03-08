@@ -14,9 +14,9 @@ class Corpus(object):
 
     This class does not store the whole corpus at once in RAM, which is useful
     when handling very large corpora. Documents are streamed from disk in a
-    lazy fashion, one document at a time, being processed, and closed before the next
-    one. Have a look at :meth:`__init__`, if you are interested in how this is
-    implemented.
+    lazy fashion, one document at a time, being processed, and closed before
+    the next one. Have a look at :meth:`__init__`, if you are interested in how
+    this is implemented.
 
     There is a plenty of formats available:
         * JSON, see :meth:`to_json`.
@@ -25,27 +25,37 @@ class Corpus(object):
     Once instantiated, you can convert the corpus **only once**. The concept of
     this library is to instantiate **one class for each target format**. For
     example:
-    
-    ```python
-    CorpusJSON = Corpus(source='corpus', target='corpus_json')
-    CorpusJSON.to_json()
-    
-    CorpusTEI = Corpus(source='corpus', target='corpus_tei')
-    CorpusTEI.to_tei()
-    
-    # and so on...
-    ```
-    
+
+    >>> CorpusJSON = Corpus(source='corpus', target='corpus_json')
+    >>> CorpusJSON.to_json()
+    >>> CorpusTEI = Corpus(source='corpus', target='corpus_tei')
+    >>> CorpusTEI.to_tei()
+
+    and so on...
+
     This should help you to keep an overview and avoid storing all kind of
     different corpus formats in the same directory.
 
+    Args:
+        source (str): The path to the corpus directory, e.g.
+            ``/tmp/corpora/test_corpus``.
+        target (str): The path to the output directory, e.g.
+                ``/tmp/corpora/formatted_test_corpus``.
+        fname_pattern (str, optional): The pattern of the corpus's
+                filenames. Metadata wil be extracted from the filenames based
+                on this pattern. If the pattern is ``None`` or does not match
+                the structure, only the basename (without suffix) will be considered
+                as metadata. An example for the filename ``parsons_social.txt``
+                would be ``{author}_{title}``. ``parsons`` will be recognized as
+                author, ``social`` as the title.
+
     Attributes:
-        corpus (:obj:`iterable`): An iterable of (``metadata``, ``text``).
+        corpus (:obj:`tuple`): An iterable of (``metadata``, ``text``).
             ``metadata`` is a pandas DataFrame containing metadata extracted
             from the filename. ``text`` is the content of the file as string.
         target (:obj:`pathlib.PosixPath`): The target directory. If it does
             not exist, it will be created.
-    
+
     """
     def __init__(self, source, target, fname_pattern='{author}_{title}'):
         """Instatiates :class:`Corpus`.
@@ -54,18 +64,7 @@ class Corpus(object):
         are only few arguments to pass. Have a look at the section below for
         more details.
 
-        Args:
-            source (str): The path to the corpus directory, e.g.
-                ``/tmp/corpora/test_corpus``.
-            target (str): The path to the output directory, e.g.
-                ``/tmp/corpora/formatted_test_corpus``.
-            fname_pattern (str, optional): The pattern of the corpus's
-                filenames. Metadata wil be extracted from the filenames based on
-                this pattern. If the pattern is ``None`` or does not match the
-                structure, only the basename (without suffix) will be considered
-                as metadata. An example for the filename ``parsons_social.txt``
-                would be ``{author}_{title}``. ``parsons`` will be recognized as
-                author, ``social`` as the title.
+     
 
         """
         def stream_corpus(path, fname_pattern):
