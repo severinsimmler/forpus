@@ -1,2 +1,4 @@
 docs/source/_build/*
 forpus/__pycache__/*
+notebooks/json/*
+notebooks/ldac/*
