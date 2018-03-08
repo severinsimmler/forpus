@@ -170,11 +170,12 @@ class Corpus(object):
             tokenizer (:obj:`function`): This must be a function for
                 tokenization. You could use a simple regex function or from
                 `NLTK <http://www.nltk.org>`_.
-            **preprocessing (:obj:`function`): This can be one or even more
-                functions which take the output of your tokenizer function as
-                input. So, you could write a function which counts the terms
-                in your corpus and removes the 100 most frequent words.
-        
+            \*\*preprocessing (:obj:`function`, optional): This can be one or
+                even more functions which take the output of your tokenizer
+                function as input. So, you could write a function which counts
+                the terms in your corpus and removes the 100 most frequent
+                words.
+
         Returns:
             None, but writes three files to disk.
         
