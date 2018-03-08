@@ -149,7 +149,7 @@ class Corpus(object):
                 json.dump(corpus_json, file)
 
     def to_ldac(self, tokenizer, **preprocessing):
-        """Converts the corpus into LDA-C.
+        """Converts the corpus into the LDA-C format.
         
         In the LDA-C corpus format, each document is succinctly represented as
         a sparse vector of word counts. Each line is of the form:
@@ -158,7 +158,7 @@ class Corpus(object):
 
         where ``[M]`` is the number of unique terms in the document, and the
         ``[count]`` associated with each term is how many times that term
-        appeared in the document. Note that [term_1] is an integer which
+        appeared in the document. Note that ``[term_1]`` is an integer which
         indexes the term; it is not a string. This will be in the file
         ``corpus.ldac``.
         
@@ -168,8 +168,12 @@ class Corpus(object):
         
         Args:
             tokenizer (:obj:`function`): This must be a function for
-                tokenization. You could use a function from NLTK's module
-                :obj:`nltk.tokenize`.
+                tokenization. You could use a simple regex function or from
+                `NLTK <http://www.nltk.org>`_.
+            **preprocessing (:obj:`function`): This can be one or even more
+                functions which take the output of your tokenizer function as
+                input. So, you could write a function which counts the terms
+                in your corpus and removes the 100 most frequent words.
         
         Returns:
             None, but writes three files to disk.
