@@ -3,7 +3,7 @@ from metadata_toolbox.utils import fname2metadata
 import json
 
 
-class Corpus:
+class Corpus(object):
     """Converts a plain text corpus to a NLP-specific corpus format.
 
     Instantiate this class, if you have a directory of plain text files (.txt),
