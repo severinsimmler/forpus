@@ -10,4 +10,7 @@ install:
     - python3 setup.py install --user
 
 script:
-    - pytest
+    - travis-sphinx build
+    
+after_success:
+    - travis-sphinx deploy
