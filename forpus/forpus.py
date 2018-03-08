@@ -67,16 +67,17 @@ class Corpus(object):
      
 
         """
-        def stream_corpus(path, fname_pattern):
-            p = Path(path)
-            for file in p.glob('*.txt'):
-                with file.open('r', encoding='utf-8') as document:
-                    fname = str(file)
-                    yield fname2metadata(fname, fname_pattern), document.read()
         self.corpus = stream_corpus(source, fname_pattern)
         self.target = Path(target)
         if not self.target.exists():
             self.target.mkdir()
+    
+    def stream_corpus(path, fname_pattern):
+        p = Path(path)
+        for file in p.glob('*.txt'):
+            with file.open('r', encoding='utf-8') as document:
+                fname = str(file)
+                yield fname2metadata(fname, fname_pattern), document.read()
     
     def to_json(self, onefile=True):
         """Converts the corpus to JSON.
