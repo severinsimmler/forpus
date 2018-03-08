@@ -143,4 +143,7 @@ class Corpus:
                 json.dump(corpus_json, file)
 
     def to_tei(self):
-        # cf. http://adrien.barbaresi.eu/blog/parsing-converting-lxml-html-tei.html
+        """
+        cf. http://adrien.barbaresi.eu/blog/parsing-converting-lxml-html-tei.html
+        """
+        pass
