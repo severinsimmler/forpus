@@ -67,7 +67,7 @@ class Corpus(object):
      
 
         """
-        self.corpus = stream_corpus(source, fname_pattern)
+        self.corpus = self.stream_corpus(source, fname_pattern)
         self.target = Path(target)
         if not self.target.exists():
             self.target.mkdir()
