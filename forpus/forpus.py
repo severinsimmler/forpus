@@ -103,7 +103,7 @@ class Corpus(object):
                 yield fname2metadata(fname, self.pattern), document.read()
 
     def to_json(self, onefile=True):
-        """Converts the corpus to JSON.
+        """Converts the corpus into JSON.
 
         **JSON** (JavaScript Object Notation) is a lightweight data-interchange
         format. It is easy for humans to read and write. It is easy for
@@ -149,6 +149,32 @@ class Corpus(object):
                 json.dump(corpus_json, file)
 
     def to_ldac(self, tokenizer, **preprocessing):
+        """Converts the corpus into LDA-C.
+        
+        In the LDA-C corpus format, each document is succinctly represented as
+        a sparse vector of word counts. Each line is of the form:
+
+        ``[M] [term_1]:[count] [term_2]:[count] ...  [term_N]:[count]``
+
+        where ``[M]`` is the number of unique terms in the document, and the
+        ``[count]`` associated with each term is how many times that term
+        appeared in the document. Note that [term_1] is an integer which
+        indexes the term; it is not a string. This will be in the file
+        ``corpus.ldac``.
+        
+        The vocabulary, exactly one term per line, will be in the file
+        ``corpus.vocab``. Furthermore, metadata extracted from the filenames
+        will be in the file ``corpus.metadata``.
+        
+        Args:
+            tokenizer (:obj:`function`): This must be a function for
+                tokenization. You could use a function from NLTK's module
+                :obj:`nltk.tokenize`.
+        
+        Returns:
+            None, but writes three files to disk.
+        
+        """
         vocabulary = dict()
         instances = list()
         metadata = pd.DataFrame()
@@ -158,7 +184,7 @@ class Corpus(object):
                 for func in preprocessing:
                     tokens = func(tokens)
             frequencies = Counter(tokens)
-            instance = [str(len(tokens))]
+            instance = [str(len(frequencies))]
             for token in tokens:
                 if token not in vocabulary:
                     vocabulary[token] = len(vocabulary)
