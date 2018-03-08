@@ -1,6 +1,8 @@
 from pathlib import Path
 from metadata_toolbox.utils import fname2metadata
 import json
+import pandas as pd
+from collections import Counter
 
 
 class Corpus(object):
@@ -130,9 +132,9 @@ class Corpus(object):
         """
         if onefile:
             corpus_json = dict()
-        for metadata, text in self.corpus:
-            stem = Path(metadata.index[0]).stem
-            document_json = metadata.to_dict('record')[0]
+        for meta, text in self.corpus:
+            stem = Path(meta.index[0]).stem
+            document_json = meta.to_dict('record')[0]
             document_json['text'] = text
             if onefile:
                 corpus_json[stem] = document_json
@@ -145,6 +147,33 @@ class Corpus(object):
             p = Path(self.target, 'corpus.json')
             with p.open('w', encoding='utf-8') as file:
                 json.dump(corpus_json, file)
+
+    def to_ldac(self, tokenizer, **preprocessing):
+        vocabulary = dict()
+        instances = list()
+        metadata = pd.DataFrame()
+        for meta, text in self.corpus:
+            tokens = tokenizer(text)
+            if preprocessing:
+                for func in preprocessing:
+                    tokens = func(tokens)
+            frequencies = Counter(tokens)
+            instance = [str(len(tokens))]
+            for token in tokens:
+                if token not in vocabulary:
+                    vocabulary[token] = len(vocabulary)
+            instance.extend(['{0}:{1}'.format(vocabulary[token],
+                                              frequencies[token])
+                                              for token in frequencies])
+            instances.append(' '.join(instance))
+            metadata = metadata.append(meta)
+        corpus_ldac = Path(self.target, 'corpus.ldac')
+        with corpus_ldac.open('w', encoding='utf-8') as file:
+            file.write('\n'.join(instances))
+        corpus_vocab = Path(self.target, 'corpus.vocab')
+        with corpus_vocab.open('w', encoding='utf-8') as file:
+            file.write('\n'.join(vocabulary.keys()))
+        metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
     def to_tei(self):
         """
