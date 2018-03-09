@@ -8,7 +8,16 @@
 
 This library supports **conversions** to
 * [JSON](https://www.json.org/index.html)
-* [TEI XML](http://www.tei-c.org/index.xml)
+* Graph
+    * [GEXF](https://gephi.org/gexf/format/)
+    * [GML](https://gephi.org/users/supported-graph-formats/gml-format/)
+    * [GraphML](http://graphml.graphdrawing.org/)
+    * [Pajek](http://vlado.fmf.uni-lj.si/pub/networks/pajek/)
+    * [SparseGraph6](https://networkx.github.io/documentation/networkx-1.10/reference/readwrite.sparsegraph6.html)
+    * [YAML](http://yaml.org/)
+* [Document-term matrix](https://en.wikipedia.org/wiki/Document-term_matrix)
+* David Blei's [LDA-C](https://github.com/blei-lab/lda-c/blob/master/readme.txt)
+* 
 
 ## Resources
 * [Forpus website](https://severinsimmler.github.io/forpus)
