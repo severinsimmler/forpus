@@ -6,3 +6,4 @@ notebooks/graph/*
 notebooks/matrix/*
 notebooks/svmlight/*
 notebooks/.ipynb_checkpoints/
+tests/__pycache__/*
