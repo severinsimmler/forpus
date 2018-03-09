@@ -127,7 +127,8 @@ class Corpus(object):
 
         You have **two options**:
             1. In case you want to write the whole corpus into one single file,
-            set the parameter ``onefile`` to True.
+            set the parameter ``onefile`` to True. **Be aware, the whole corpus
+            will be in RAM**.
 
             2. If ``onefile`` is False, there will be one JSON file for each
             document.
@@ -157,6 +158,55 @@ class Corpus(object):
             p = Path(self.target, 'corpus.json')
             with p.open('w', encoding='utf-8') as file:
                 json.dump(corpus_json, file)
+
+    def to_document_term_matrix(self, tokenizer, counter, **preprocessing):
+        """Converst the corpus into a document-term matrix.
+        
+        A **document-term matrix** or term-document matrix is a mathematical
+        matrix that describes the frequency of terms that occur in a collection
+        of documents. In a document-term matrix, rows correspond to documents
+        in the collection and columns correspond to terms.
+        
+        Args:
+            tokenizer (:obj:`function`): This must be a function for
+                tokenization. You could use a simple regex function or from
+                `NLTK <http://www.nltk.org>`_.
+            counter (:obj:`function`): This must be a function which counts
+                elements of an iterable. There are various schemes for
+                determining the value that each entry in the matrix should
+                take. One such scheme is
+                `tf-idf <https://en.wikipedia.org/wiki/Tf-idf>`_. But you can
+                simply use the :class:`Counter` provided in the Python
+                standard library.
+            \*\*preprocessing (:obj:`function`, optional): This can be one or
+                even more functions which take the output of your tokenizer
+                function as input. So, you could write a function which counts
+                the terms in your corpus and removes the 100 most frequent
+                words.
+
+        Returns:
+            None, but writes the formatted corpus to disk.
+        
+        """
+        document_term_matrix = pd.DataFrame()
+        metadata = pd.DataFrame()
+        for meta, text in self.corpus:
+            tokens = tokenizer(text)
+            if preprocessing:
+                for func in preprocessing.values():
+                    tokens = func(tokens)
+            frequencies = pd.Series(counter(tokens))
+            frequencies.name = Path(meta.index[0]).stem
+            document_term_matrix = document_term_matrix.append(frequencies)
+            stem = Path(meta.index[0]).stem
+            meta['stem'] = stem
+            metadata = metadata.append(meta)
+        matrix_sum = document_term_matrix.sum()
+        sorted_matrix = matrix_sum.sort_values(ascending=False)
+        document_term_matrix = document_term_matrix.loc[:, sorted_matrix.index]
+        document_term_matrix = document_term_matrix.fillna(0)
+        document_term_matrix.to_csv(Path(self.target, 'corpus.matrix'))
+        metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
     def to_ldac(self, tokenizer, **preprocessing):
         """Converts the corpus into the LDA-C format.
@@ -245,23 +295,6 @@ class Corpus(object):
         else:
             raise ValueError("The variant '{0}' is not supported".format(variant))
     
-    def to_document_term_matrix(self, tokenizer, **preprocessing):
-        document_term_matrix = pd.DataFrame()
-        metadata = pd.DataFrame()
-        for meta, text in self.corpus:
-            tokens = tokenizer(text)
-            if preprocessing:
-                for func in preprocessing.values():
-                    tokens = func(tokens)
-            frequencies = pd.Series(Counter(tokens))
-            frequencies.name = Path(meta.index[0]).stem
-            document_term_matrix = document_term_matrix.append(frequencies)
-            stem = Path(meta.index[0]).stem
-            meta['stem'] = stem
-            metadata = metadata.append(meta)
-        document_term_matrix = document_term_matrix.loc[:, document_term_matrix.sum().sort_values(ascending=False).index]
-        document_term_matrix.fillna(0).to_csv(Path(self.target, 'corpus.matrix'))
-        metadata.to_csv(Path(self.target, 'corpus.metadata'))
     
     def to_svmlight(self, tokenizer, **preprocessing):
         vocabulary = dict()
