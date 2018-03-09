@@ -1,4 +1,4 @@
-<img src="docs/images/logo.png" width="250px" alt="Logo">
+![Logo](docs/images/logo.png)
 <a href="https://travis-ci.org/severinsimmler/forpus"><img src="https://travis-ci.org/severinsimmler/forpus.svg?branch=master" alt="Build"></a>
 <br><br>
 
