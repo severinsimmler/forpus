@@ -9,3 +9,4 @@ notebooks/.ipynb_checkpoints/
 tests/__pycache__/*
 output/*
 .cache/*
+.buildinfo
