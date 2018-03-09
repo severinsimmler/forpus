@@ -231,3 +231,50 @@ class Corpus(object):
             nx.write_yaml(G, Path(self.target, 'corpus.yaml'))
         else:
             raise ValueError("The variant '{0}' is not supported".format(variant))
+    
+    def to_document_term_matrix(self, tokenizer, **preprocessing):
+        document_term_matrix = pd.DataFrame()
+        metadata = pd.DataFrame()
+        for meta, text in self.corpus:
+            tokens = tokenizer(text)
+            if preprocessing:
+                for func in preprocessing.values():
+                    tokens = func(tokens)
+            frequencies = pd.Series(Counter(tokens))
+            frequencies.name = Path(meta.index[0]).stem
+            document_term_matrix = document_term_matrix.append(frequencies)
+            stem = Path(meta.index[0]).stem
+            meta['stem'] = stem
+            metadata = metadata.append(meta)
+        document_term_matrix = document_term_matrix.loc[:, document_term_matrix.sum().sort_values(ascending=False).index]
+        document_term_matrix.fillna(0).to_csv(Path(self.target, 'corpus.matrix'))
+        metadata.to_csv(Path(self.target, 'corpus.metadata'))
+    
+    def to_svmlight(self, tokenizer, **preprocessing):
+        vocabulary = dict()
+        instances = list()
+        metadata = pd.DataFrame()
+        for meta, text in self.corpus:
+            tokens = tokenizer(text)
+            if preprocessing:
+                for func in preprocessing.values():
+                    tokens = func(tokens)
+            frequencies = Counter(tokens)
+            instance = [str(0)]
+            for token in tokens:
+                if token not in vocabulary:
+                    vocabulary[token] = len(vocabulary) + 1
+            instance.extend(['{0}:{1}'.format(vocabulary[token],
+                                              frequencies[token])
+                                              for token in frequencies])
+            instances.append(' '.join(instance))
+            stem = Path(meta.index[0]).stem
+            meta['stem'] = stem
+            metadata = metadata.append(meta)
+        corpus_ldac = Path(self.target, 'corpus.svmlight')
+        with corpus_ldac.open('w', encoding='utf-8') as file:
+            file.write('\n'.join(instances))
+        corpus_vocab = Path(self.target, 'corpus.vocab')
+        with corpus_vocab.open('w', encoding='utf-8') as file:
+            file.write('\n'.join(vocabulary.keys()))
+        metadata.to_csv(Path(self.target, 'corpus.metadata'))
