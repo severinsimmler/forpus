@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Forpus &#8212; Forpus 0.0.1dev documentation</title>
+    <title>&lt;no title&gt; &#8212; Forpus 0.0.1dev documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" src="../_static/documentation_options.js"></script>
@@ -30,117 +30,206 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="module-forpus.forpus">
-<span id="forpus"></span><h1>Forpus<a class="headerlink" href="#module-forpus.forpus" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+  <p>API and Documentation</p>
+<span class="target" id="module-forpus.forpus"></span><dl class="class">
 <dt id="forpus.forpus.Corpus">
 <em class="property">class </em><code class="descclassname">forpus.forpus.</code><code class="descname">Corpus</code><span class="sig-paren">(</span><em>source</em>, <em>target</em>, <em>fname_pattern='{author}_{title}'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Convert a plain text corpus to a NLP-specific corpus format.</p>
-<p>Instantiate this class, if you have a directory of plain text files (.txt),
+<p>Converts a plain text corpus into a NLP-specific corpus format.</p>
+<p>Construct this class, if you have a directory of plain text files (.txt),
 and want to convert the content of those files into a NLP-specific corpus
 format. In most cases, each NLP tool uses its own idiosyncratic input
 format. This class helps you to convert a corpus very easy to the desired
 format.</p>
 <p>This class does not store the whole corpus at once in RAM, which is useful
-when handling very large corpora. Documents are streamed from disk in a lazy
-fashion, one document at a time, being processed, and closed before the next
-one. Have a look at <code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code>, if you are interested in how this is
-implemented.</p>
+when handling very large corpora. Documents are streamed from disk in a
+lazy fashion, one document at a time, and closed before the next one is
+opened. Have a look at <a class="reference internal" href="#forpus.forpus.Corpus.stream_corpus" title="forpus.forpus.Corpus.stream_corpus"><code class="xref py py-meth docutils literal notranslate"><span class="pre">stream_corpus()</span></code></a>, if you are interested in how
+this is implemented.</p>
 <dl class="docutils">
 <dt>There is a plenty of formats available:</dt>
 <dd><ul class="first last simple">
-<li>JSON, see <a class="reference internal" href="#forpus.forpus.Corpus.to_json" title="forpus.forpus.Corpus.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_json()</span></code></a>.</li>
-<li>TEI XML, see <a class="reference internal" href="#forpus.forpus.Corpus.to_tei" title="forpus.forpus.Corpus.to_tei"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_tei()</span></code></a>.</li>
+<li>JSON, see <a class="reference internal" href="#forpus.forpus.Corpus.to_json" title="forpus.forpus.Corpus.to_json"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_json()</span></code></a></li>
+<li>Document-term matrix, see <a class="reference internal" href="#forpus.forpus.Corpus.to_document_term_matrix" title="forpus.forpus.Corpus.to_document_term_matrix"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_document_term_matrix()</span></code></a></li>
+<li><dl class="first docutils">
+<dt>Graph, see <a class="reference internal" href="#forpus.forpus.Corpus.to_graph" title="forpus.forpus.Corpus.to_graph"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_graph()</span></code></a></dt>
+<dd><ul class="first last">
+<li>GEXF</li>
+<li>GML</li>
+<li>GraphML</li>
+<li>Pajek</li>
+<li>SparseGraph6</li>
+<li>YAML</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li>David Blei’s LDA-C, see <a class="reference internal" href="#forpus.forpus.Corpus.to_ldac" title="forpus.forpus.Corpus.to_ldac"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_ldac()</span></code></a></li>
+<li>Thorsten Joachims’ SVMlight, see <a class="reference internal" href="#forpus.forpus.Corpus.to_svmlight" title="forpus.forpus.Corpus.to_svmlight"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_svmlight()</span></code></a></li>
 </ul>
 </dd>
 </dl>
 <p>Once instantiated, you can convert the corpus <strong>only once</strong>. The concept of
-this library is to instantiate <strong>one class for each target format</strong>. For
+this library is to construct <strong>one class for each target format</strong>. For
 example:</p>
-<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
-CorpusJSON = Corpus(source=’corpus’, target=’corpus_json’)
-CorpusJSON.to_json()</p>
-<p>CorpusTEI = Corpus(source=’corpus’, target=’corpus_tei’)
-CorpusTEI.to_tei()</p>
-<p># and so on…
-<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
-<p>This should help you to keep an overview and avoid storing all kind of
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">CorpusJSON</span> <span class="o">=</span> <span class="n">Corpus</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;corpus&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;corpus_json&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CorpusJSON</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CorpusTEI</span> <span class="o">=</span> <span class="n">Corpus</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;corpus&#39;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s1">&#39;corpus_tei&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">CorpusTEI</span><span class="o">.</span><span class="n">to_tei</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>and so on…</p>
+<p>This should <strong>help you</strong> to keep an overview and avoid storing all kind of
 different corpus formats in the same directory.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>source (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>): The path to the corpus directory. This can be an</dt>
+<dd>absolute or relative path.</dd>
+<dt>target (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>): The path to the output directory. Same as above,</dt>
+<dd>either an absolute or relative path.</dd>
+<dt>fname_pattern (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional): The pattern of the corpus’s</dt>
+<dd>filenames. Metadata wil be extracted from the filenames based on
+this pattern. If the pattern is <code class="docutils literal notranslate"><span class="pre">None</span></code> or does not match the
+structure, only the basename (without suffix) will be considered as
+metadata. An example for the filename <code class="docutils literal notranslate"><span class="pre">parsons_social.txt</span></code> would
+be <code class="docutils literal notranslate"><span class="pre">{author}_{title}</span></code>. <code class="docutils literal notranslate"><span class="pre">parsons</span></code> will be recognized as author,
+<code class="docutils literal notranslate"><span class="pre">social</span></code> as the title.</dd>
+</dl>
+</dd>
 <dt>Attributes:</dt>
 <dd><dl class="first last docutils">
-<dt>corpus (<code class="xref py py-obj docutils literal notranslate"><span class="pre">iterable</span></code>): An iterable of (<code class="docutils literal notranslate"><span class="pre">metadata</span></code>, <code class="docutils literal notranslate"><span class="pre">text</span></code>).</dt>
-<dd><code class="docutils literal notranslate"><span class="pre">metadata</span></code> is a pandas DataFrame containing metadata extracted
-from the filename. <code class="docutils literal notranslate"><span class="pre">text</span></code> is the content of the file as string.</dd>
-<dt>target (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.PosixPath" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pathlib.PosixPath</span></code></a>): The target directory. If it does</dt>
-<dd>not exist, it will be created.</dd>
+<dt>source (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>): The path to the corpus directory. This can be an</dt>
+<dd>absolute or relative path.</dd>
+<dt>target (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>): The path to the output directory. Same as above,</dt>
+<dd>either an absolute or relative path.</dd>
+<dt>pattern (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>, optional): The pattern of the corpus’s filenames.</dt>
+<dd>Metadata wil be extracted from the filenames based on this pattern.
+If the pattern is <code class="docutils literal notranslate"><span class="pre">None</span></code> or does not match the structure, only
+the basename (without suffix) will be considered as metadata. An
+example for the filename <code class="docutils literal notranslate"><span class="pre">parsons_social.txt</span></code> would be
+<code class="docutils literal notranslate"><span class="pre">{author}_{title}</span></code>. <code class="docutils literal notranslate"><span class="pre">parsons</span></code> will be recognized as author,
+<code class="docutils literal notranslate"><span class="pre">social</span></code> as the title.</dd>
+<dt>corpus (<code class="xref py py-obj docutils literal notranslate"><span class="pre">iterable</span></code>): This is an iterable of <code class="docutils literal notranslate"><span class="pre">(metadata,</span> <span class="pre">text)</span></code>.</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">metadata</span></code> is a <code class="xref py py-obj docutils literal notranslate"><span class="pre">pandas.DataFrame</span></code> containing metadata
+extracted from the filename. <code class="docutils literal notranslate"><span class="pre">text</span></code> is the content of the file as
+<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>.</dd>
 </dl>
 </dd>
 </dl>
 <dl class="method">
-<dt id="forpus.forpus.Corpus.to_json">
-<code class="descname">to_json</code><span class="sig-paren">(</span><em>onefile=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus.to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus.to_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts the corpus to JSON.</p>
-<p><strong>JSON</strong> (JavaScript Object Notation) is a lightweight data-interchange
-format. It is easy for humans to read and write. It is easy for machines
-to parse and generate. For more information on this format, follow
-<a class="reference external" href="https://www.json.org/index.html">this link</a>.</p>
-<p>This method converts your plain text corpus to JSON. Besides the content
-of your documents, metadata will be included in the JSON. Have a look at
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code> for proper metadata recognition.</p>
+<dt id="forpus.forpus.Corpus.stream_corpus">
+<code class="descname">stream_corpus</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus.stream_corpus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus.stream_corpus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Streams a text corpus from disk.</p>
+<p>This method is used to instantiate the <code class="xref py py-obj docutils literal notranslate"><span class="pre">corpus</span></code>. Each file in the
+directory <code class="xref py py-obj docutils literal notranslate"><span class="pre">source</span></code> will be opened and yielded in a for loop.</p>
 <dl class="docutils">
-<dt>You have two options:</dt>
-<dd><ol class="first last arabic">
-<li><dl class="first docutils">
-<dt>Write the whole corpus into one single file. In this case, set</dt>
-<dd><p class="first"><a href="#id9"><span class="problematic" id="id10">:arg:`onefile`</span></a> to True. An example could be:</p>
-<p><a href="#id11"><span class="problematic" id="id12">``</span></a><a href="#id13"><span class="problematic" id="id14">`</span></a>json
-{“parsons_system”:</p>
-<blockquote>
-<div><blockquote>
-<div><dl class="docutils">
-<dt>{“author”: “parsons”,</dt>
-<dd><p class="first last">“title”: “system”,
-“text”: “Culture, Personality and the Social Systems…”},</p>
-</dd>
+<dt>Yields:</dt>
+<dd>A tuple of <code class="docutils literal notranslate"><span class="pre">(metadata,</span> <span class="pre">text)</span></code>. <code class="docutils literal notranslate"><span class="pre">metadata</span></code> is a pandas DataFrame
+containing metadata extracted from the filename. <code class="docutils literal notranslate"><span class="pre">text</span></code> is the
+content of the file as <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>.</dd>
 </dl>
-</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="forpus.forpus.Corpus.to_document_term_matrix">
+<code class="descname">to_document_term_matrix</code><span class="sig-paren">(</span><em>tokenizer</em>, <em>counter</em>, <em>**preprocessing</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus.to_document_term_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus.to_document_term_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converst the corpus into a document-term matrix.</p>
+<p>A <strong>document-term matrix</strong> or term-document matrix is a mathematical
+matrix that describes the frequency of terms that occur in a collection
+of documents. In a document-term matrix, rows correspond to documents
+in the collection and columns correspond to terms.</p>
 <dl class="docutils">
-<dt>“parsons_action”:</dt>
+<dt>Args:</dt>
 <dd><dl class="first last docutils">
-<dt>{“author”: “parsons”,</dt>
-<dd><p class="first last">“title”: “action”,
-“text”: “The Sick Role and the Role of the Physician…”}</p>
-</dd>
+<dt>tokenizer (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>): This must be a function for</dt>
+<dd>tokenization. You could use a simple regex function or from
+<a class="reference external" href="http://www.nltk.org">NLTK</a>.</dd>
+<dt>counter (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>): This must be a function which counts</dt>
+<dd>elements of an iterable. There are various schemes for
+determining the value that each entry in the matrix should
+take. One such scheme is
+<a class="reference external" href="https://en.wikipedia.org/wiki/Tf-idf">tf-idf</a>. But you can
+simply use the <code class="xref py py-class docutils literal notranslate"><span class="pre">Counter</span></code> provided in the Python
+standard library.</dd>
+<dt>**preprocessing (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>, optional): This can be one or</dt>
+<dd>even more functions which take the output of your tokenizer
+function as input. So, you could write a function which counts
+the terms in your corpus and removes the 100 most frequent
+words.</dd>
 </dl>
 </dd>
+<dt>Returns:</dt>
+<dd>None, but writes the formatted corpus to disk.</dd>
 </dl>
-<p>}</p>
-</div></blockquote>
-<p class="last"><a href="#id15"><span class="problematic" id="id16">``</span></a><a href="#id17"><span class="problematic" id="id18">`</span></a></p>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>Write one file for each document. In this case, set</dt>
-<dd><p class="first"><a href="#id19"><span class="problematic" id="id20">:arg:`onefile`</span></a> to False. An example for the first document could
-be:</p>
-<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a>json
-{“author”: “parsons”,</p>
-<blockquote>
-<div><p>“title”: “system”,
-“text”: “Culture, Personality and the Social Systems…”}</p>
-</div></blockquote>
-<p class="last"><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a></p>
-</dd>
-</dl>
-</li>
-</ol>
+</dd></dl>
+
+<dl class="method">
+<dt id="forpus.forpus.Corpus.to_graph">
+<code class="descname">to_graph</code><span class="sig-paren">(</span><em>tokenizer</em>, <em>variant='gexf'</em>, <em>**preprocessing</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus.to_graph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus.to_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converst the corpus into a graph.</p>
+<p>In mathematics, and more specifically in graph theory, a graph is a
+structure amounting to a set of objects in which some pairs of the
+objects are in some sense <em>related</em>. This method creates nodes
+(<em>objects</em>) for each document (basically the filename), as well as for
+each type in the corpus. Each document node has one or more attributes
+based on the metadata extracted from the filenames. If a type appears
+in a document, there will be an edge between document node and type
+node.</p>
+<dl class="docutils">
+<dt>You can convert the graph to various graph-specific XML formats:</dt>
+<dd><ul class="first last simple">
+<li><a class="reference external" href="https://gephi.org/gexf/format/">GEXF</a></li>
+<li><a class="reference external" href="https://gephi.org/users/supported-graph-formats/gml-format/">GML</a></li>
+<li><a class="reference external" href="http://graphml.graphdrawing.org/">GraphML</a></li>
+<li><a class="reference external" href="http://vlado.fmf.uni-lj.si/pub/networks/pajek/">Pajek</a></li>
+<li><a class="reference external" href="https://networkx.github.io/documentation/networkx-1.10/reference/readwrite.sparsegraph6.html">SparseGraph6</a></li>
+<li><a class="reference external" href="http://yaml.org/">YAML</a></li>
+</ul>
 </dd>
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
-<dt>onefile (bool): If True, write the whole corpus in one file.</dt>
+<dt>tokenizer (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>): This must be a function for</dt>
+<dd>tokenization. You could use a simple regex function or from
+<a class="reference external" href="http://www.nltk.org">NLTK</a>.</dd>
+<dt>variant (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></a>): This must be the kind of XML foramt you want</dt>
+<dd>to convert the graph to. Possible values are <code class="docutils literal notranslate"><span class="pre">gexf</span></code>, <code class="docutils literal notranslate"><span class="pre">gml</span></code>,
+<code class="docutils literal notranslate"><span class="pre">graphml</span></code>, <code class="docutils literal notranslate"><span class="pre">pajek</span></code>, <code class="docutils literal notranslate"><span class="pre">graph6</span></code>, and <code class="docutils literal notranslate"><span class="pre">yaml</span></code>.</dd>
+<dt>**preprocessing (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>, optional): This can be one or</dt>
+<dd>even more functions which take the output of your tokenizer
+function as input. So, you could write a function which counts
+the terms in your corpus and removes the 100 most frequent
+words.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>None, but writes the formatted corpus to disk.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="forpus.forpus.Corpus.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><em>onefile=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus.to_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the corpus into JSON.</p>
+<p><strong>JSON</strong> (JavaScript Object Notation) is a lightweight data-interchange
+format. It is easy for humans to read and write. It is easy for
+machines to parse and generate. For more information on this format,
+follow <a class="reference external" href="https://www.json.org/index.html">this link</a>.</p>
+<p>This method converts your plain text corpus to JSON. Besides the
+content of your documents, <strong>metadata will be included</strong> in the JSON.
+Have a look at the basic description of <a class="reference internal" href="#forpus.forpus.Corpus" title="forpus.forpus.Corpus"><code class="xref py py-class docutils literal notranslate"><span class="pre">Corpus</span></code></a> for proper
+metadata recognition.</p>
+<dl class="docutils">
+<dt>You have <strong>two options</strong>:</dt>
+<dd><p class="first">1. In case you want to write the whole corpus into one single file,
+set the parameter <code class="docutils literal notranslate"><span class="pre">onefile</span></code> to True. <strong>Be aware, the whole corpus
+will be in RAM</strong>.</p>
+<p class="last">2. If <code class="docutils literal notranslate"><span class="pre">onefile</span></code> is False, there will be one JSON file for each
+document.</p>
+</dd>
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>onefile (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code></a>): If True, write the whole corpus in one file.</dt>
 <dd>Otherwise each document will be written to single files.</dd>
 </dl>
 </dd>
@@ -150,46 +239,107 @@ be:</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="forpus.forpus.Corpus.to_tei">
-<code class="descname">to_tei</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus.to_tei"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus.to_tei" title="Permalink to this definition">¶</a></dt>
-<dd><p>cf. <a class="reference external" href="http://adrien.barbaresi.eu/blog/parsing-converting-lxml-html-tei.html">http://adrien.barbaresi.eu/blog/parsing-converting-lxml-html-tei.html</a></p>
+<dt id="forpus.forpus.Corpus.to_ldac">
+<code class="descname">to_ldac</code><span class="sig-paren">(</span><em>tokenizer</em>, <em>counter</em>, <em>**preprocessing</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus.to_ldac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus.to_ldac" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the corpus into the LDA-C format.</p>
+<p>In the LDA-C corpus format, each document is succinctly represented as
+a sparse vector of word counts. Each line is of the form:</p>
+<p><code class="docutils literal notranslate"><span class="pre">[M]</span> <span class="pre">[term_1]:[count]</span> <span class="pre">[term_2]:[count]</span> <span class="pre">...</span>&#160; <span class="pre">[term_N]:[count]</span></code></p>
+<p>where <code class="docutils literal notranslate"><span class="pre">[M]</span></code> is the number of unique terms in the document, and the
+<code class="docutils literal notranslate"><span class="pre">[count]</span></code> associated with each term is how many times that term
+appeared in the document. Note that <code class="docutils literal notranslate"><span class="pre">[term_1]</span></code> is an integer which
+indexes the term; it is not a string. This will be in the file
+<code class="docutils literal notranslate"><span class="pre">corpus.ldac</span></code>.</p>
+<p>The vocabulary, exactly one term per line, will be in the file
+<code class="docutils literal notranslate"><span class="pre">corpus.tokens</span></code>. Furthermore, metadata extracted from the filenames
+will be in the file <code class="docutils literal notranslate"><span class="pre">corpus.metadata</span></code>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>tokenizer (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>): This must be a function for</dt>
+<dd>tokenization. You could use a simple regex function or from
+<a class="reference external" href="http://www.nltk.org">NLTK</a>.</dd>
+<dt>counter (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>): This must be a function which counts</dt>
+<dd>elements of an iterable. There are various schemes for
+determining the value that each entry should take. One such
+scheme is <a class="reference external" href="https://en.wikipedia.org/wiki/Tf-idf">tf-idf</a>.
+But you can simply use the <code class="xref py py-class docutils literal notranslate"><span class="pre">Counter</span></code> provided in the
+Python standard library.</dd>
+<dt>**preprocessing (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>, optional): This can be one or</dt>
+<dd>even more functions which take the output of your tokenizer
+function as input. So, you could write a function which counts
+the terms in your corpus and removes the 100 most frequent
+words.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>None, but writes three files to disk.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="forpus.forpus.Corpus.to_svmlight">
+<code class="descname">to_svmlight</code><span class="sig-paren">(</span><em>tokenizer</em>, <em>counter</em>, <em>classes</em>, <em>**preprocessing</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/forpus/forpus.html#Corpus.to_svmlight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#forpus.forpus.Corpus.to_svmlight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the corpus into the SVMlight format.</p>
+<p>In the SVMlight corpus format, each document is succinctly represented
+as a sparse vector of word counts. Each line is of the form:</p>
+<p><code class="docutils literal notranslate"><span class="pre">[c]</span> <span class="pre">[feature_1]:[count]</span> <span class="pre">[feature_2]:[count]</span> <span class="pre">...</span> <span class="pre">[feature_N]:[count]</span></code></p>
+<p>where <code class="docutils literal notranslate"><span class="pre">[c]</span></code> is the identifier of the instance class (in the context
+of topic modeling this is 0 for all instances), and the <code class="docutils literal notranslate"><span class="pre">[count]</span></code>
+associated with each term is how many times that term appeared in the
+document. Note that <code class="docutils literal notranslate"><span class="pre">[feature_1]</span></code> is an integer which indexes the
+term; it is not a string. This will be in the file <code class="docutils literal notranslate"><span class="pre">corpus.svmlight</span></code>.</p>
+<p>The vocabulary, exactly one term per line, will be in the file
+<code class="docutils literal notranslate"><span class="pre">corpus.tokens</span></code>. Furthermore, metadata extracted from the filenames
+will be in the file <code class="docutils literal notranslate"><span class="pre">corpus.metadata</span></code>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>tokenizer (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>): This must be a function for</dt>
+<dd>tokenization. You could use a simple regex function or from
+<a class="reference external" href="http://www.nltk.org">NLTK</a>.</dd>
+<dt>counter (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>): This must be a function which counts</dt>
+<dd>elements of an iterable. There are various schemes for
+determining the value that each entry should take. One such
+scheme is <a class="reference external" href="https://en.wikipedia.org/wiki/Tf-idf">tf-idf</a>.
+But you can simply use the <code class="xref py py-class docutils literal notranslate"><span class="pre">Counter</span></code> provided in the
+Python standard library.</dd>
+<dt>classes (<code class="xref py py-obj docutils literal notranslate"><span class="pre">iterable</span></code>): An iterable of the classes of the</dt>
+<dd>documents. For instance, +1 as the target value marks a
+positive example, -1 a negative example respectively.</dd>
+<dt>**preprocessing (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code>, optional): This can be one or</dt>
+<dd>even more functions which take the output of your tokenizer
+function as input. So, you could write a function which counts
+the terms in your corpus and removes the 100 most frequent
+words.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>None, but writes three files to disk.</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-</div>
 
 
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/gen/forpus.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+        <div class="sphinxsidebarwrapper"><p style="font-size: 50px;"><b>Forpus</b></p><br>
+<img src="../../../images/logo.png"><br><br>
+<img src="https://travis-ci.org/severinsimmler/forpus.svg?branch=master">
+<br><br>
+<p style="font-size: 16px;">
+<a href="https://foo.bar.com/">Getting Started</a></h4>
+</p>
+<p style="font-size: 16px;">
+<a href="https://foo.bar.com/">Tutorial</a>
+</p>
+<p style="font-size: 16px;">
+<a href="https://foo.bar.com/">API</a>
+</p>
         </div>
       </div>
       <div class="clearer"></div>

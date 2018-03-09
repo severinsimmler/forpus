@@ -32,125 +32,142 @@
             
   <h1>Source code for forpus.forpus</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="k">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">metadata_toolbox.utils</span> <span class="k">import</span> <span class="n">fname2metadata</span>
 <span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
+<span class="kn">from</span> <span class="nn">metadata_toolbox.utils</span> <span class="k">import</span> <span class="n">fname2metadata</span>
 
-<div class="viewcode-block" id="Corpus"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus">[docs]</a><span class="k">class</span> <span class="nc">Corpus</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Convert a plain text corpus to a NLP-specific corpus format.</span>
-<span class="sd">    </span>
-<span class="sd">    Instantiate this class, if you have a directory of plain text files (.txt),</span>
+
+<div class="viewcode-block" id="Corpus"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus">[docs]</a><span class="k">class</span> <span class="nc">Corpus</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts a plain text corpus into a NLP-specific corpus format.</span>
+
+<span class="sd">    Construct this class, if you have a directory of plain text files (.txt),</span>
 <span class="sd">    and want to convert the content of those files into a NLP-specific corpus</span>
 <span class="sd">    format. In most cases, each NLP tool uses its own idiosyncratic input</span>
 <span class="sd">    format. This class helps you to convert a corpus very easy to the desired</span>
 <span class="sd">    format.</span>
-<span class="sd">    </span>
+
 <span class="sd">    This class does not store the whole corpus at once in RAM, which is useful</span>
-<span class="sd">    when handling very large corpora. Documents are streamed from disk in a lazy</span>
-<span class="sd">    fashion, one document at a time, being processed, and closed before the next</span>
-<span class="sd">    one. Have a look at :meth:`__init__`, if you are interested in how this is</span>
-<span class="sd">    implemented.</span>
-<span class="sd">    </span>
+<span class="sd">    when handling very large corpora. Documents are streamed from disk in a</span>
+<span class="sd">    lazy fashion, one document at a time, and closed before the next one is</span>
+<span class="sd">    opened. Have a look at :meth:`stream_corpus`, if you are interested in how</span>
+<span class="sd">    this is implemented.</span>
+
 <span class="sd">    There is a plenty of formats available:</span>
-<span class="sd">        * JSON, see :meth:`to_json`.</span>
-<span class="sd">        * TEI XML, see :meth:`to_tei`.</span>
-<span class="sd">    </span>
+<span class="sd">        * JSON, see :meth:`to_json`</span>
+<span class="sd">        * Document-term matrix, see :meth:`to_document_term_matrix()`</span>
+<span class="sd">        * Graph, see :meth:`to_graph`</span>
+<span class="sd">            * GEXF</span>
+<span class="sd">            * GML</span>
+<span class="sd">            * GraphML</span>
+<span class="sd">            * Pajek</span>
+<span class="sd">            * SparseGraph6</span>
+<span class="sd">            * YAML</span>
+<span class="sd">        * David Blei&#39;s LDA-C, see :meth:`to_ldac()`</span>
+<span class="sd">        * Thorsten Joachims&#39; SVMlight, see :meth:`to_svmlight()`</span>
+
 <span class="sd">    Once instantiated, you can convert the corpus **only once**. The concept of</span>
-<span class="sd">    this library is to instantiate **one class for each target format**. For</span>
+<span class="sd">    this library is to construct **one class for each target format**. For</span>
 <span class="sd">    example:</span>
-<span class="sd">    </span>
-<span class="sd">    ```python</span>
-<span class="sd">    CorpusJSON = Corpus(source=&#39;corpus&#39;, target=&#39;corpus_json&#39;)</span>
-<span class="sd">    CorpusJSON.to_json()</span>
-<span class="sd">    </span>
-<span class="sd">    CorpusTEI = Corpus(source=&#39;corpus&#39;, target=&#39;corpus_tei&#39;)</span>
-<span class="sd">    CorpusTEI.to_tei()</span>
-<span class="sd">    </span>
-<span class="sd">    # and so on...</span>
-<span class="sd">    ```</span>
-<span class="sd">    </span>
-<span class="sd">    This should help you to keep an overview and avoid storing all kind of</span>
+
+<span class="sd">    &gt;&gt;&gt; CorpusJSON = Corpus(source=&#39;corpus&#39;, target=&#39;corpus_json&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; CorpusJSON.to_json()</span>
+<span class="sd">    &gt;&gt;&gt; CorpusTEI = Corpus(source=&#39;corpus&#39;, target=&#39;corpus_tei&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; CorpusTEI.to_tei()</span>
+
+<span class="sd">    and so on...</span>
+
+<span class="sd">    This should **help you** to keep an overview and avoid storing all kind of</span>
 <span class="sd">    different corpus formats in the same directory.</span>
 
+<span class="sd">    Args:</span>
+<span class="sd">        source (:obj:`str`): The path to the corpus directory. This can be an</span>
+<span class="sd">            absolute or relative path.</span>
+<span class="sd">        target (:obj:`str`): The path to the output directory. Same as above,</span>
+<span class="sd">            either an absolute or relative path.</span>
+<span class="sd">        fname_pattern (:obj:`str`, optional): The pattern of the corpus&#39;s</span>
+<span class="sd">            filenames. Metadata wil be extracted from the filenames based on</span>
+<span class="sd">            this pattern. If the pattern is ``None`` or does not match the</span>
+<span class="sd">            structure, only the basename (without suffix) will be considered as</span>
+<span class="sd">            metadata. An example for the filename ``parsons_social.txt`` would</span>
+<span class="sd">            be ``{author}_{title}``. ``parsons`` will be recognized as author,</span>
+<span class="sd">            ``social`` as the title.</span>
+
 <span class="sd">    Attributes:</span>
-<span class="sd">        corpus (:obj:`iterable`): An iterable of (``metadata``, ``text``).</span>
-<span class="sd">            ``metadata`` is a pandas DataFrame containing metadata extracted</span>
-<span class="sd">            from the filename. ``text`` is the content of the file as string.</span>
-<span class="sd">        target (:obj:`pathlib.PosixPath`): The target directory. If it does</span>
-<span class="sd">            not exist, it will be created.</span>
-<span class="sd">    </span>
+<span class="sd">        source (:obj:`str`): The path to the corpus directory. This can be an</span>
+<span class="sd">            absolute or relative path.</span>
+<span class="sd">        target (:obj:`str`): The path to the output directory. Same as above,</span>
+<span class="sd">            either an absolute or relative path.</span>
+<span class="sd">        pattern (:obj:`str`, optional): The pattern of the corpus&#39;s filenames.</span>
+<span class="sd">            Metadata wil be extracted from the filenames based on this pattern.</span>
+<span class="sd">            If the pattern is ``None`` or does not match the structure, only</span>
+<span class="sd">            the basename (without suffix) will be considered as metadata. An</span>
+<span class="sd">            example for the filename ``parsons_social.txt`` would be</span>
+<span class="sd">            ``{author}_{title}``. ``parsons`` will be recognized as author,</span>
+<span class="sd">            ``social`` as the title.</span>
+<span class="sd">        corpus (:obj:`iterable`): This is an iterable of ``(metadata, text)``.</span>
+<span class="sd">            ``metadata`` is a :obj:`pandas.DataFrame` containing metadata</span>
+<span class="sd">            extracted from the filename. ``text`` is the content of the file as</span>
+<span class="sd">            :obj:`str`.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">fname_pattern</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{author}</span><span class="s1">_</span><span class="si">{title}</span><span class="s1">&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Instatiates :class:`Corpus`.</span>
 
 <span class="sd">        This method instatiates all objects of the class :class:`Corpus`. There</span>
-<span class="sd">        are only few arguments to pass. Have a look at the section below for</span>
-<span class="sd">        more details.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            source (str): The path to the corpus directory, e.g.</span>
-<span class="sd">                ``/tmp/corpora/test_corpus``.</span>
-<span class="sd">            target (str): The path to the output directory, e.g.</span>
-<span class="sd">                ``/tmp/corpora/formatted_test_corpus``.</span>
-<span class="sd">            fname_pattern (str, optional): The pattern of the corpus&#39;s</span>
-<span class="sd">                filenames. Metadata wil be extracted from the filenames based on</span>
-<span class="sd">                this pattern. If the pattern is ``None`` or does not match the</span>
-<span class="sd">                structure, only the basename (without suffix) will be considered</span>
-<span class="sd">                as metadata. An example for the filename ``parsons_social.txt``</span>
-<span class="sd">                would be ``{author}_{title}``. ``parsons`` will be recognized as</span>
-<span class="sd">                author, ``social`` as the title.</span>
+<span class="sd">        are only few arguments to pass. Have a look at the docstring of</span>
+<span class="sd">        :class:`Corpus` for more details.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">def</span> <span class="nf">stream_corpus</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fname_pattern</span><span class="p">):</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.txt&#39;</span><span class="p">):</span>
-                <span class="k">with</span> <span class="n">file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">document</span><span class="p">:</span>
-                    <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-                    <span class="k">yield</span> <span class="n">fname2metadata</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">fname_pattern</span><span class="p">),</span> <span class="n">document</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span> <span class="o">=</span> <span class="n">stream_corpus</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">fname_pattern</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="n">fname_pattern</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stream_corpus</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">mkdir</span><span class="p">()</span>
-    
+
+<div class="viewcode-block" id="Corpus.stream_corpus"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus.stream_corpus">[docs]</a>    <span class="k">def</span> <span class="nf">stream_corpus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Streams a text corpus from disk.</span>
+
+<span class="sd">        This method is used to instantiate the :obj:`corpus`. Each file in the</span>
+<span class="sd">        directory :obj:`source` will be opened and yielded in a for loop.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            A tuple of ``(metadata, text)``. ``metadata`` is a pandas DataFrame</span>
+<span class="sd">            containing metadata extracted from the filename. ``text`` is the</span>
+<span class="sd">            content of the file as :obj:`str`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.txt&#39;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">document</span><span class="p">:</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file</span><span class="p">)</span></div>
+                <span class="k">yield</span> <span class="n">fname2metadata</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span><span class="p">),</span> <span class="n">document</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
 <div class="viewcode-block" id="Corpus.to_json"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus.to_json">[docs]</a>    <span class="k">def</span> <span class="nf">to_json</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">onefile</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Converts the corpus to JSON.</span>
+        <span class="sd">&quot;&quot;&quot;Converts the corpus into JSON.</span>
 
 <span class="sd">        **JSON** (JavaScript Object Notation) is a lightweight data-interchange</span>
-<span class="sd">        format. It is easy for humans to read and write. It is easy for machines</span>
-<span class="sd">        to parse and generate. For more information on this format, follow</span>
-<span class="sd">        `this link &lt;https://www.json.org/index.html&gt;`_.</span>
+<span class="sd">        format. It is easy for humans to read and write. It is easy for</span>
+<span class="sd">        machines to parse and generate. For more information on this format,</span>
+<span class="sd">        follow `this link &lt;https://www.json.org/index.html&gt;`_.</span>
 
-<span class="sd">        This method converts your plain text corpus to JSON. Besides the content</span>
-<span class="sd">        of your documents, metadata will be included in the JSON. Have a look at</span>
-<span class="sd">        :meth:`__init__` for proper metadata recognition.</span>
-<span class="sd">        </span>
-<span class="sd">        You have two options:</span>
-<span class="sd">            1. Write the whole corpus into one single file. In this case, set</span>
-<span class="sd">                :arg:`onefile` to True. An example could be:</span>
-<span class="sd">                </span>
-<span class="sd">                ```json</span>
-<span class="sd">                {&quot;parsons_system&quot;:</span>
-<span class="sd">                    {&quot;author&quot;: &quot;parsons&quot;,</span>
-<span class="sd">                     &quot;title&quot;: &quot;system&quot;,</span>
-<span class="sd">                     &quot;text&quot;: &quot;Culture, Personality and the Social Systems...&quot;},</span>
-<span class="sd">                 &quot;parsons_action&quot;:</span>
-<span class="sd">                    {&quot;author&quot;: &quot;parsons&quot;,</span>
-<span class="sd">                     &quot;title&quot;: &quot;action&quot;,</span>
-<span class="sd">                     &quot;text&quot;: &quot;The Sick Role and the Role of the Physician...&quot;}</span>
-<span class="sd">                 }</span>
-<span class="sd">                ```</span>
-<span class="sd">            </span>
-<span class="sd">            2. Write one file for each document. In this case, set</span>
-<span class="sd">                :arg:`onefile` to False. An example for the first document could</span>
-<span class="sd">                be:</span>
-<span class="sd">                </span>
-<span class="sd">                ```json</span>
-<span class="sd">                {&quot;author&quot;: &quot;parsons&quot;,</span>
-<span class="sd">                 &quot;title&quot;: &quot;system&quot;,</span>
-<span class="sd">                 &quot;text&quot;: &quot;Culture, Personality and the Social Systems...&quot;}</span>
-<span class="sd">                ```</span>
+<span class="sd">        This method converts your plain text corpus to JSON. Besides the</span>
+<span class="sd">        content of your documents, **metadata will be included** in the JSON.</span>
+<span class="sd">        Have a look at the basic description of :class:`Corpus` for proper</span>
+<span class="sd">        metadata recognition.</span>
+
+<span class="sd">        You have **two options**:</span>
+<span class="sd">            1. In case you want to write the whole corpus into one single file,</span>
+<span class="sd">            set the parameter ``onefile`` to True. **Be aware, the whole corpus</span>
+<span class="sd">            will be in RAM**.</span>
+
+<span class="sd">            2. If ``onefile`` is False, there will be one JSON file for each</span>
+<span class="sd">            document.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            onefile (bool): If True, write the whole corpus in one file.</span>
+<span class="sd">            onefile (:obj:`bool`): If True, write the whole corpus in one file.</span>
 <span class="sd">                Otherwise each document will be written to single files.</span>
 
 <span class="sd">        Returns:</span>
@@ -159,9 +176,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">onefile</span><span class="p">:</span>
             <span class="n">corpus_json</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span><span class="p">:</span>
-            <span class="n">stem</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stem</span>
-            <span class="n">document_json</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="s1">&#39;record&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">meta</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span><span class="p">:</span>
+            <span class="n">stem</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stem</span>
+            <span class="n">document_json</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="s1">&#39;record&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">document_json</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">text</span>
             <span class="k">if</span> <span class="n">onefile</span><span class="p">:</span>
                 <span class="n">corpus_json</span><span class="p">[</span><span class="n">stem</span><span class="p">]</span> <span class="o">=</span> <span class="n">document_json</span>
@@ -175,38 +192,284 @@
             <span class="k">with</span> <span class="n">p</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span></div>
                 <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">corpus_json</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Corpus.to_tei"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus.to_tei">[docs]</a>    <span class="k">def</span> <span class="nf">to_tei</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        cf. http://adrien.barbaresi.eu/blog/parsing-converting-lxml-html-tei.html</span>
-<span class="sd">        &quot;&quot;&quot;</span></div></div>
-        <span class="k">pass</span>
+<div class="viewcode-block" id="Corpus.to_document_term_matrix"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus.to_document_term_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">to_document_term_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">counter</span><span class="p">,</span> <span class="o">**</span><span class="n">preprocessing</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Converst the corpus into a document-term matrix.</span>
+
+<span class="sd">        A **document-term matrix** or term-document matrix is a mathematical</span>
+<span class="sd">        matrix that describes the frequency of terms that occur in a collection</span>
+<span class="sd">        of documents. In a document-term matrix, rows correspond to documents</span>
+<span class="sd">        in the collection and columns correspond to terms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tokenizer (:obj:`function`): This must be a function for</span>
+<span class="sd">                tokenization. You could use a simple regex function or from</span>
+<span class="sd">                `NLTK &lt;http://www.nltk.org&gt;`_.</span>
+<span class="sd">            counter (:obj:`function`): This must be a function which counts</span>
+<span class="sd">                elements of an iterable. There are various schemes for</span>
+<span class="sd">                determining the value that each entry in the matrix should</span>
+<span class="sd">                take. One such scheme is</span>
+<span class="sd">                `tf-idf &lt;https://en.wikipedia.org/wiki/Tf-idf&gt;`_. But you can</span>
+<span class="sd">                simply use the :class:`Counter` provided in the Python</span>
+<span class="sd">                standard library.</span>
+<span class="sd">            \*\*preprocessing (:obj:`function`, optional): This can be one or</span>
+<span class="sd">                even more functions which take the output of your tokenizer</span>
+<span class="sd">                function as input. So, you could write a function which counts</span>
+<span class="sd">                the terms in your corpus and removes the 100 most frequent</span>
+<span class="sd">                words.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None, but writes the formatted corpus to disk.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">document_term_matrix</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">meta</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span><span class="p">:</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">preprocessing</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">tokens</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">counter</span><span class="p">(</span><span class="n">tokens</span><span class="p">))</span>
+            <span class="n">frequencies</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stem</span>
+            <span class="n">document_term_matrix</span> <span class="o">=</span> <span class="n">document_term_matrix</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frequencies</span><span class="p">)</span>
+            <span class="n">stem</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stem</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;stem&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stem</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="n">matrix_sum</span> <span class="o">=</span> <span class="n">document_term_matrix</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">sorted_matrix</span> <span class="o">=</span> <span class="n">matrix_sum</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">document_term_matrix</span> <span class="o">=</span> <span class="n">document_term_matrix</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="n">sorted_matrix</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">document_term_matrix</span> <span class="o">=</span> <span class="n">document_term_matrix</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">document_term_matrix</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.matrix&#39;</span><span class="p">))</span></div>
+        <span class="n">metadata</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.metadata&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Corpus.to_graph"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus.to_graph">[docs]</a>    <span class="k">def</span> <span class="nf">to_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">variant</span><span class="o">=</span><span class="s1">&#39;gexf&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">preprocessing</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Converst the corpus into a graph.</span>
+
+<span class="sd">        In mathematics, and more specifically in graph theory, a graph is a</span>
+<span class="sd">        structure amounting to a set of objects in which some pairs of the</span>
+<span class="sd">        objects are in some sense *related*. This method creates nodes</span>
+<span class="sd">        (*objects*) for each document (basically the filename), as well as for</span>
+<span class="sd">        each type in the corpus. Each document node has one or more attributes</span>
+<span class="sd">        based on the metadata extracted from the filenames. If a type appears</span>
+<span class="sd">        in a document, there will be an edge between document node and type</span>
+<span class="sd">        node.</span>
+
+<span class="sd">        You can convert the graph to various graph-specific XML formats:</span>
+<span class="sd">            * `GEXF &lt;https://gephi.org/gexf/format/&gt;`_</span>
+<span class="sd">            * `GML &lt;https://gephi.org/users/supported-graph-formats/gml-\</span>
+<span class="sd">            format/&gt;`_</span>
+<span class="sd">            * `GraphML &lt;http://graphml.graphdrawing.org/&gt;`_</span>
+<span class="sd">            * `Pajek &lt;http://vlado.fmf.uni-lj.si/pub/networks/pajek/&gt;`_</span>
+<span class="sd">            * `SparseGraph6 &lt;https://networkx.github.io/documentation/networkx\</span>
+<span class="sd">            -1.10/reference/readwrite.sparsegraph6.html&gt;`_</span>
+<span class="sd">            * `YAML &lt;http://yaml.org/&gt;`_</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tokenizer (:obj:`function`): This must be a function for</span>
+<span class="sd">                tokenization. You could use a simple regex function or from</span>
+<span class="sd">                `NLTK &lt;http://www.nltk.org&gt;`_.</span>
+<span class="sd">            variant (:obj:`str`): This must be the kind of XML foramt you want</span>
+<span class="sd">                to convert the graph to. Possible values are ``gexf``, ``gml``,</span>
+<span class="sd">                ``graphml``, ``pajek``, ``graph6``, and ``yaml``.</span>
+<span class="sd">            \*\*preprocessing (:obj:`function`, optional): This can be one or</span>
+<span class="sd">                even more functions which take the output of your tokenizer</span>
+<span class="sd">                function as input. So, you could write a function which counts</span>
+<span class="sd">                the terms in your corpus and removes the 100 most frequent</span>
+<span class="sd">                words.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None, but writes the formatted corpus to disk.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">meta</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span><span class="p">:</span>
+            <span class="n">stem</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stem</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="n">stem</span><span class="p">,</span> <span class="o">**</span><span class="n">meta</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="s1">&#39;record&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">preprocessing</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">tokens</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="p">[(</span><span class="n">token</span><span class="p">,</span> <span class="n">stem</span><span class="p">)</span> <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">]</span>
+            <span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">variant</span> <span class="o">==</span> <span class="s1">&#39;gexf&#39;</span><span class="p">:</span>
+            <span class="n">nx</span><span class="o">.</span><span class="n">write_gexf</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.gexf&#39;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">variant</span> <span class="o">==</span> <span class="s1">&#39;gml&#39;</span><span class="p">:</span>
+            <span class="n">nx</span><span class="o">.</span><span class="n">write_gml</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.gml&#39;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">variant</span> <span class="o">==</span> <span class="s1">&#39;graphml&#39;</span><span class="p">:</span>
+            <span class="n">nx</span><span class="o">.</span><span class="n">write_graphml</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.graphml&#39;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">variant</span> <span class="o">==</span> <span class="s1">&#39;pajek&#39;</span><span class="p">:</span>
+            <span class="n">nx</span><span class="o">.</span><span class="n">write_pajek</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.pajek&#39;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">variant</span> <span class="o">==</span> <span class="s1">&#39;graph6&#39;</span><span class="p">:</span>
+            <span class="n">nx</span><span class="o">.</span><span class="n">write_graph6</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.graph6&#39;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">variant</span> <span class="o">==</span> <span class="s1">&#39;yaml&#39;</span><span class="p">:</span>
+            <span class="n">nx</span><span class="o">.</span><span class="n">write_yaml</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.yaml&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The variant &#39;</span><span class="si">{0}</span><span class="s2">&#39; is not supported.&quot;</span>
+                             <span class="s2">&quot;Use &#39;gexf&#39;, &#39;gml&#39;, &#39;graphml&#39;, &#39;pajek&#39;,&quot;</span></div>
+                             <span class="s2">&quot;&#39;graph6&#39; or &#39;yaml&#39;.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">variant</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Corpus.to_ldac"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus.to_ldac">[docs]</a>    <span class="k">def</span> <span class="nf">to_ldac</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">counter</span><span class="p">,</span> <span class="o">**</span><span class="n">preprocessing</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Converts the corpus into the LDA-C format.</span>
+
+<span class="sd">        In the LDA-C corpus format, each document is succinctly represented as</span>
+<span class="sd">        a sparse vector of word counts. Each line is of the form:</span>
+
+<span class="sd">        ``[M] [term_1]:[count] [term_2]:[count] ...  [term_N]:[count]``</span>
+
+<span class="sd">        where ``[M]`` is the number of unique terms in the document, and the</span>
+<span class="sd">        ``[count]`` associated with each term is how many times that term</span>
+<span class="sd">        appeared in the document. Note that ``[term_1]`` is an integer which</span>
+<span class="sd">        indexes the term; it is not a string. This will be in the file</span>
+<span class="sd">        ``corpus.ldac``.</span>
+
+<span class="sd">        The vocabulary, exactly one term per line, will be in the file</span>
+<span class="sd">        ``corpus.tokens``. Furthermore, metadata extracted from the filenames</span>
+<span class="sd">        will be in the file ``corpus.metadata``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tokenizer (:obj:`function`): This must be a function for</span>
+<span class="sd">                tokenization. You could use a simple regex function or from</span>
+<span class="sd">                `NLTK &lt;http://www.nltk.org&gt;`_.</span>
+<span class="sd">            counter (:obj:`function`): This must be a function which counts</span>
+<span class="sd">                elements of an iterable. There are various schemes for</span>
+<span class="sd">                determining the value that each entry should take. One such</span>
+<span class="sd">                scheme is `tf-idf &lt;https://en.wikipedia.org/wiki/Tf-idf&gt;`_.</span>
+<span class="sd">                But you can simply use the :class:`Counter` provided in the</span>
+<span class="sd">                Python standard library.</span>
+<span class="sd">            \*\*preprocessing (:obj:`function`, optional): This can be one or</span>
+<span class="sd">                even more functions which take the output of your tokenizer</span>
+<span class="sd">                function as input. So, you could write a function which counts</span>
+<span class="sd">                the terms in your corpus and removes the 100 most frequent</span>
+<span class="sd">                words.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None, but writes three files to disk.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">corpus_ldac</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.ldac&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">corpus_ldac</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">corpus_ldac</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="n">vocabulary</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">meta</span><span class="p">,</span> <span class="n">text</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">corpus</span><span class="p">:</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">preprocessing</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">tokens</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frequencies</span><span class="p">))]</span>
+            <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">token</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vocabulary</span><span class="p">:</span>
+                    <span class="n">vocabulary</span><span class="p">[</span><span class="n">token</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">)</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">[</span><span class="n">token</span><span class="p">],</span>
+                                              <span class="n">frequencies</span><span class="p">[</span><span class="n">token</span><span class="p">])</span>
+                                              <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">frequencies</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">corpus_ldac</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">with</span> <span class="n">corpus_ldac</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">corpus_ldac</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">stem</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stem</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;basename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stem</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="n">corpus_vocab</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.tokens&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">corpus_vocab</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vocabulary</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div>
+        <span class="n">metadata</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.metadata&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Corpus.to_svmlight"><a class="viewcode-back" href="../../gen/forpus.html#forpus.forpus.Corpus.to_svmlight">[docs]</a>    <span class="k">def</span> <span class="nf">to_svmlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">counter</span><span class="p">,</span> <span class="n">classes</span><span class="p">,</span> <span class="o">**</span><span class="n">preprocessing</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Converts the corpus into the SVMlight format.</span>
+
+<span class="sd">        In the SVMlight corpus format, each document is succinctly represented</span>
+<span class="sd">        as a sparse vector of word counts. Each line is of the form:</span>
+
+<span class="sd">        ``[c] [feature_1]:[count] [feature_2]:[count] ... [feature_N]:[count]``</span>
+
+<span class="sd">        where ``[c]`` is the identifier of the instance class (in the context</span>
+<span class="sd">        of topic modeling this is 0 for all instances), and the ``[count]``</span>
+<span class="sd">        associated with each term is how many times that term appeared in the</span>
+<span class="sd">        document. Note that ``[feature_1]`` is an integer which indexes the</span>
+<span class="sd">        term; it is not a string. This will be in the file ``corpus.svmlight``.</span>
+
+<span class="sd">        The vocabulary, exactly one term per line, will be in the file</span>
+<span class="sd">        ``corpus.tokens``. Furthermore, metadata extracted from the filenames</span>
+<span class="sd">        will be in the file ``corpus.metadata``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tokenizer (:obj:`function`): This must be a function for</span>
+<span class="sd">                tokenization. You could use a simple regex function or from</span>
+<span class="sd">                `NLTK &lt;http://www.nltk.org&gt;`_.</span>
+<span class="sd">            counter (:obj:`function`): This must be a function which counts</span>
+<span class="sd">                elements of an iterable. There are various schemes for</span>
+<span class="sd">                determining the value that each entry should take. One such</span>
+<span class="sd">                scheme is `tf-idf &lt;https://en.wikipedia.org/wiki/Tf-idf&gt;`_.</span>
+<span class="sd">                But you can simply use the :class:`Counter` provided in the</span>
+<span class="sd">                Python standard library.</span>
+<span class="sd">            classes (:obj:`iterable`): An iterable of the classes of the</span>
+<span class="sd">                documents. For instance, +1 as the target value marks a</span>
+<span class="sd">                positive example, -1 a negative example respectively.</span>
+<span class="sd">            \*\*preprocessing (:obj:`function`, optional): This can be one or</span>
+<span class="sd">                even more functions which take the output of your tokenizer</span>
+<span class="sd">                function as input. So, you could write a function which counts</span>
+<span class="sd">                the terms in your corpus and removes the 100 most frequent</span>
+<span class="sd">                words.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            None, but writes three files to disk.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">corpus_svmlight</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.svmlight&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">corpus_svmlight</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">corpus_svmlight</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
+        <span class="n">vocabulary</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">corpus</span><span class="p">,</span> <span class="n">cl</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">corpus</span><span class="p">,</span> <span class="n">classes</span><span class="p">):</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">corpus</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">corpus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">preprocessing</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">preprocessing</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">tokens</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+            <span class="n">frequencies</span> <span class="o">=</span> <span class="n">counter</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+            <span class="n">instance</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">cl</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">token</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vocabulary</span><span class="p">:</span>
+                    <span class="n">vocabulary</span><span class="p">[</span><span class="n">token</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">[</span><span class="n">token</span><span class="p">],</span>
+                                              <span class="n">frequencies</span><span class="p">[</span><span class="n">token</span><span class="p">])</span>
+                                              <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">frequencies</span><span class="p">])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">corpus_svmlight</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">with</span> <span class="n">corpus_svmlight</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">corpus_svmlight</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                    <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">stem</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">stem</span>
+            <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;basename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stem</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="n">corpus_vocab</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.tokens&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">corpus_vocab</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">vocabulary</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div></div>
+        <span class="n">metadata</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="s1">&#39;corpus.metadata&#39;</span><span class="p">))</span>
 </pre></div>
 
           </div>
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper"><div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../../index.html">Documentation overview</a><ul>
-  <li><a href="../index.html">Module code</a><ul>
-  </ul></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+        <div class="sphinxsidebarwrapper"><p style="font-size: 50px;"><b>Forpus</b></p><br>
+<img src="../../../images/logo.png"><br><br>
+<img src="https://travis-ci.org/severinsimmler/forpus.svg?branch=master">
+<br><br>
+<p style="font-size: 16px;">
+<a href="https://foo.bar.com/">Getting Started</a></h4>
+</p>
+<p style="font-size: 16px;">
+<a href="https://foo.bar.com/">Tutorial</a>
+</p>
+<p style="font-size: 16px;">
+<a href="https://foo.bar.com/">API</a>
+</p>
         </div>
       </div>
       <div class="clearer"></div>
