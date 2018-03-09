@@ -3,6 +3,7 @@ from metadata_toolbox.utils import fname2metadata
 import json
 import pandas as pd
 from collections import Counter
+import networkx as nx
 
 
 class Corpus(object):
