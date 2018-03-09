@@ -1,16 +1,10 @@
 language: python
 
 python:
-    - 3.3
-    - 3.4
-    - 3.5
     - 3.6
 
 install:
-    - pip3 install -r requirements.txt
+    - pip3 install -r requirements-dev.txt
 
 script:
-    - travis-sphinx build
-    
-after_success:
-    - travis-sphinx deploy
+    - pytest
