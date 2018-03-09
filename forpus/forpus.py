@@ -273,7 +273,6 @@ class Corpus(object):
             raise ValueError("The variant '{0}' is not supported."
                              "Use 'gexf', 'gml', 'graphml', 'pajek',"
                              "'graph6' or 'yaml'.".format(variant))
-    
 
     def to_ldac(self, tokenizer, **preprocessing):
         """Converts the corpus into the LDA-C format.
@@ -290,7 +289,7 @@ class Corpus(object):
         ``corpus.ldac``.
         
         The vocabulary, exactly one term per line, will be in the file
-        ``corpus.vocab``. Furthermore, metadata extracted from the filenames
+        ``corpus.tokens``. Furthermore, metadata extracted from the filenames
         will be in the file ``corpus.metadata``.
         
         Args:
@@ -331,7 +330,7 @@ class Corpus(object):
                     file.write('\n'.join(instance))
             metadata = metadata.append(meta)
         
-        corpus_vocab = Path(self.target, 'corpus.vocab')
+        corpus_vocab = Path(self.target, 'corpus.tokens')
         with corpus_vocab.open('w', encoding='utf-8') as file:
             file.write('\n'.join(vocabulary.keys()))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
