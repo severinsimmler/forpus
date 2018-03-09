@@ -161,12 +161,12 @@ class Corpus(object):
 
     def to_document_term_matrix(self, tokenizer, counter, **preprocessing):
         """Converst the corpus into a document-term matrix.
-        
+
         A **document-term matrix** or term-document matrix is a mathematical
         matrix that describes the frequency of terms that occur in a collection
         of documents. In a document-term matrix, rows correspond to documents
         in the collection and columns correspond to terms.
-        
+
         Args:
             tokenizer (:obj:`function`): This must be a function for
                 tokenization. You could use a simple regex function or from
@@ -186,7 +186,7 @@ class Corpus(object):
 
         Returns:
             None, but writes the formatted corpus to disk.
-        
+
         """
         document_term_matrix = pd.DataFrame()
         metadata = pd.DataFrame()
@@ -207,10 +207,10 @@ class Corpus(object):
         document_term_matrix = document_term_matrix.fillna(0)
         document_term_matrix.to_csv(Path(self.target, 'corpus.matrix'))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
-        
+
     def to_graph(self, tokenizer, variant='gexf', **preprocessing):
         """Converst the corpus into a graph.
-        
+
         In mathematics, and more specifically in graph theory, a graph is a
         structure amounting to a set of objects in which some pairs of the
         objects are in some sense *related*. This method creates nodes
@@ -219,7 +219,7 @@ class Corpus(object):
         based on the metadata extracted from the filenames. If a type appears
         in a document, there will be an edge between document node and type
         node.
-        
+
         You can convert the graph to various graph-specific XML formats:
             * `GEXF <https://gephi.org/gexf/format/>`_
             * `GML <https://gephi.org/users/supported-graph-formats/gml-\
@@ -229,7 +229,7 @@ class Corpus(object):
             * `SparseGraph6 <https://networkx.github.io/documentation/networkx\
             -1.10/reference/readwrite.sparsegraph6.html>`_
             * `YAML <http://yaml.org/>`_
-        
+
         Args:
             tokenizer (:obj:`function`): This must be a function for
                 tokenization. You could use a simple regex function or from
@@ -245,7 +245,7 @@ class Corpus(object):
 
         Returns:
             None, but writes the formatted corpus to disk.
-        
+
         """
         G = nx.Graph()
         for meta, text in self.corpus:
@@ -276,7 +276,7 @@ class Corpus(object):
 
     def to_ldac(self, tokenizer, counter, **preprocessing):
         """Converts the corpus into the LDA-C format.
-        
+
         In the LDA-C corpus format, each document is succinctly represented as
         a sparse vector of word counts. Each line is of the form:
 
@@ -287,11 +287,11 @@ class Corpus(object):
         appeared in the document. Note that ``[term_1]`` is an integer which
         indexes the term; it is not a string. This will be in the file
         ``corpus.ldac``.
-        
+
         The vocabulary, exactly one term per line, will be in the file
         ``corpus.tokens``. Furthermore, metadata extracted from the filenames
         will be in the file ``corpus.metadata``.
-        
+
         Args:
             tokenizer (:obj:`function`): This must be a function for
                 tokenization. You could use a simple regex function or from
@@ -310,7 +310,7 @@ class Corpus(object):
 
         Returns:
             None, but writes three files to disk.
-        
+
         """
         corpus_ldac = Path(self.target, 'corpus.ldac')
         vocabulary = dict()
@@ -342,7 +342,7 @@ class Corpus(object):
 
     def to_svmlight(self, tokenizer, counter, classes, **preprocessing):
         """Converts the corpus into the LDA-C format.
-        
+
         In the LDA-C corpus format, each document is succinctly represented as
         a sparse vector of word counts. Each line is of the form:
 
@@ -353,11 +353,11 @@ class Corpus(object):
         appeared in the document. Note that ``[term_1]`` is an integer which
         indexes the term; it is not a string. This will be in the file
         ``corpus.ldac``.
-        
+
         The vocabulary, exactly one term per line, will be in the file
         ``corpus.tokens``. Furthermore, metadata extracted from the filenames
         will be in the file ``corpus.metadata``.
-        
+
         Args:
             tokenizer (:obj:`function`): This must be a function for
                 tokenization. You could use a simple regex function or from
@@ -379,7 +379,7 @@ class Corpus(object):
 
         Returns:
             None, but writes three files to disk.
-        
+
         """
         corpus_svmlight = Path(self.target, 'corpus.svmlight')
         vocabulary = dict()
