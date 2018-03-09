@@ -341,18 +341,18 @@ class Corpus(object):
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
     def to_svmlight(self, tokenizer, counter, classes, **preprocessing):
-        """Converts the corpus into the LDA-C format.
+        """Converts the corpus into the SVMlight format.
 
-        In the LDA-C corpus format, each document is succinctly represented as
-        a sparse vector of word counts. Each line is of the form:
+        In the SVMlight corpus format, each document is succinctly represented
+        as a sparse vector of word counts. Each line is of the form:
 
-        ``[M] [term_1]:[count] [term_2]:[count] ...  [term_N]:[count]``
+        ``[c] [feature_1]:[count] [feature_2]:[count] ... [feature_N]:[count]``
 
-        where ``[M]`` is the number of unique terms in the document, and the
-        ``[count]`` associated with each term is how many times that term
-        appeared in the document. Note that ``[term_1]`` is an integer which
-        indexes the term; it is not a string. This will be in the file
-        ``corpus.ldac``.
+        where ``[c]`` is the identifier of the instance class (in the context
+        of topic modeling this is 0 for all instances), and the ``[count]``
+        associated with each term is how many times that term appeared in the
+        document. Note that ``[feature_1]`` is an integer which indexes the
+        term; it is not a string. This will be in the file ``corpus.svmlight``.
 
         The vocabulary, exactly one term per line, will be in the file
         ``corpus.tokens``. Furthermore, metadata extracted from the filenames
