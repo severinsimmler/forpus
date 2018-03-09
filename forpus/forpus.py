@@ -336,6 +336,8 @@ class Corpus(object):
             else:
                 with corpus_ldac.open('a', encoding='utf-8') as file:
                     file.write(' '.join(instance) + '\n')
+            stem = Path(meta.index[0]).stem
+            meta['basename'] = stem
             metadata = metadata.append(meta)
         corpus_vocab = Path(self.target, 'corpus.tokens')
         with corpus_vocab.open('w', encoding='utf-8') as file:
@@ -410,7 +412,7 @@ class Corpus(object):
                 with corpus_svmlight.open('a', encoding='utf-8') as file:
                     file.write(' '.join(instance) + '\n')
             stem = Path(meta.index[0]).stem
-            meta['stem'] = stem
+            meta['basename'] = stem
             metadata = metadata.append(meta)
         corpus_vocab = Path(self.target, 'corpus.tokens')
         with corpus_vocab.open('w', encoding='utf-8') as file:
