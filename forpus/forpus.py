@@ -1,9 +1,9 @@
 from pathlib import Path
-from metadata_toolbox.utils import fname2metadata
 import json
-import pandas as pd
 from collections import Counter
+import pandas as pd
 import networkx as nx
+from metadata_toolbox.utils import fname2metadata
 
 
 class Corpus(object):
