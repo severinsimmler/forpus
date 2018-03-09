@@ -207,6 +207,73 @@ class Corpus(object):
         document_term_matrix = document_term_matrix.fillna(0)
         document_term_matrix.to_csv(Path(self.target, 'corpus.matrix'))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
+        
+    def to_graph(self, tokenizer, variant='gexf', **preprocessing):
+        """Converst the corpus into a graph.
+        
+        In mathematics, and more specifically in graph theory, a graph is a
+        structure amounting to a set of objects in which some pairs of the
+        objects are in some sense *related*. This method creates nodes
+        (*objects*) for each document (basically the filename), as well as for
+        each type in the corpus. Each document node has one or more attributes
+        based on the metadata extracted from the filenames. If a type appears
+        in a document, there will be an edge between document node and type
+        node.
+        
+        You can convert the graph to various graph-specific XML formats:
+            * `GEXF <https://gephi.org/gexf/format/>`_
+            * `GML <https://gephi.org/users/supported-graph-formats/gml-\
+            format/>`_
+            * `GraphML <http://graphml.graphdrawing.org/>`_
+            * `Pajek <http://vlado.fmf.uni-lj.si/pub/networks/pajek/>`_
+            * `SparseGraph6 <https://networkx.github.io/documentation/networkx\
+            -1.10/reference/readwrite.sparsegraph6.html>`_
+            * `YAML <http://yaml.org/>`_
+        
+        Args:
+            tokenizer (:obj:`function`): This must be a function for
+                tokenization. You could use a simple regex function or from
+                `NLTK <http://www.nltk.org>`_.
+            variant (:obj:`str`): This must be the kind of XML foramt you want
+                to convert the graph to. Possible values are ``gexf``, ``gml``,
+                ``graphml``, ``pajek``, ``graph6``, and ``yaml``.
+            \*\*preprocessing (:obj:`function`, optional): This can be one or
+                even more functions which take the output of your tokenizer
+                function as input. So, you could write a function which counts
+                the terms in your corpus and removes the 100 most frequent
+                words.
+
+        Returns:
+            None, but writes the formatted corpus to disk.
+        
+        """
+        G = nx.Graph()
+        for meta, text in self.corpus:
+            stem = Path(meta.index[0]).stem
+            G.add_node(stem, **meta.to_dict('record')[0])
+            tokens = tokenizer(text)
+            if preprocessing:
+                for func in preprocessing.values():
+                    tokens = func(tokens)
+            edges = [(token, stem) for token in tokens]
+            G.add_edges_from(edges)
+        if variant == 'gexf':
+            nx.write_gexf(G, Path(self.target, 'corpus.gexf'))
+        elif variant == 'gml':
+            nx.write_gml(G, Path(self.target, 'corpus.gml'))
+        elif variant == 'graphml':
+            nx.write_graphml(G, Path(self.target, 'corpus.graphml'))
+        elif variant == 'pajek':
+            nx.write_pajek(G, Path(self.target, 'corpus.pajek'))
+        elif variant == 'graph6':
+            nx.write_graph6(G, Path(self.target, 'corpus.graph6'))
+        elif variant == 'yaml':
+            nx.write_yaml(G, Path(self.target, 'corpus.yaml'))
+        else:
+            raise ValueError("The variant '{0}' is not supported."
+                             "Use 'gexf', 'gml', 'graphml', 'pajek',"
+                             "'graph6' or 'yaml'.".format(variant))
+    
 
     def to_ldac(self, tokenizer, **preprocessing):
         """Converts the corpus into the LDA-C format.
@@ -269,31 +336,6 @@ class Corpus(object):
             file.write('\n'.join(vocabulary.keys()))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
-    def to_graph(self, tokenizer, variant='gexf', **preprocessing):
-        G = nx.Graph()
-        for meta, text in self.corpus:
-            stem = Path(meta.index[0]).stem
-            G.add_node(stem, **meta.to_dict('record')[0])
-            tokens = tokenizer(text)
-            if preprocessing:
-                for func in preprocessing.values():
-                    tokens = func(tokens)
-            edges = [(token, stem) for token in tokens]
-            G.add_edges_from(edges)
-        if variant == 'gexf':
-            nx.write_gexf(G, Path(self.target, 'corpus.gexf'))
-        elif variant == 'gml':
-            nx.write_gml(G, Path(self.target, 'corpus.gml'))
-        elif variant == 'graphml':
-            nx.write_graphml(G, Path(self.target, 'corpus.graphml'))
-        elif variant == 'pajek':
-            nx.write_pajek(G, Path(self.target, 'corpus.pajek'))
-        elif variant == 'graph6':
-            nx.write_graph6(G, Path(self.target, 'corpus.graph6'))
-        elif variant == 'yaml':
-            nx.write_yaml(G, Path(self.target, 'corpus.yaml'))
-        else:
-            raise ValueError("The variant '{0}' is not supported".format(variant))
     
     
     def to_svmlight(self, tokenizer, **preprocessing):
