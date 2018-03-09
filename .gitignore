@@ -1,0 +1,11 @@
+docs/source/_build/*
+forpus/__pycache__/*
+notebooks/json/*
+notebooks/ldac/*
+notebooks/graph/*
+notebooks/matrix/*
+notebooks/svmlight/*
+notebooks/.ipynb_checkpoints/
+tests/__pycache__/*
+output/*
+.cache/*
