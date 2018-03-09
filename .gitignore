@@ -2,4 +2,6 @@ docs/source/_build/*
 forpus/__pycache__/*
 notebooks/json/*
 notebooks/ldac/*
+notebooks/graph/*
+notebooks/matrix/*
 notebooks/.ipynb_checkpoints/
