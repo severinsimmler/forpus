@@ -181,8 +181,8 @@ class Corpus(object):
             None, but writes three files to disk.
         
         """
+        corpus_ldac = Path(self.target, 'corpus.ldac')
         vocabulary = dict()
-        instances = list()
         metadata = pd.DataFrame()
         for meta, text in self.corpus:
             tokens = tokenizer(text)
@@ -197,11 +197,14 @@ class Corpus(object):
             instance.extend(['{0}:{1}'.format(vocabulary[token],
                                               frequencies[token])
                                               for token in frequencies])
-            instances.append(' '.join(instance))
+            if not corpus_ldac.exists():
+                with corpus_ldac.open('w', encoding='utf-8') as file:
+                    file.write('\n'.join(instance))
+            else:
+                with corpus_ldac.open('a', encoding='utf-8') as file:
+                    file.write('\n'.join(instance))
             metadata = metadata.append(meta)
-        corpus_ldac = Path(self.target, 'corpus.ldac')
-        with corpus_ldac.open('w', encoding='utf-8') as file:
-            file.write('\n'.join(instances))
+        
         corpus_vocab = Path(self.target, 'corpus.vocab')
         with corpus_vocab.open('w', encoding='utf-8') as file:
             file.write('\n'.join(vocabulary.keys()))
