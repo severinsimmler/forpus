@@ -22,11 +22,20 @@ class Corpus(object):
     this is implemented.
 
     There is a plenty of formats available:
-        * JSON, see :meth:`to_json`.
-        * TEI XML, see :meth:`to_tei`.
+        * JSON, see :meth:`to_json`
+        * Document-term matrix, see :meth:`to_document_term_matrix()`
+        * Graph, see :meth:`to_graph`
+            * GEXF
+            * GML
+            * GraphML
+            * Pajek
+            * SparseGraph6
+            * YAML
+        * David Blei's LDA-C, see :meth:`to_ldac()`
+        * Thorsten Joachims' SVMlight, see :meth:`to_svmlight()`
 
     Once instantiated, you can convert the corpus **only once**. The concept of
-    this library is to instantiate **one class for each target format**. For
+    this library is to construct **one class for each target format**. For
     example:
 
     >>> CorpusJSON = Corpus(source='corpus', target='corpus_json')
