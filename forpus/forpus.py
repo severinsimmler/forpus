@@ -274,7 +274,7 @@ class Corpus(object):
                              "Use 'gexf', 'gml', 'graphml', 'pajek',"
                              "'graph6' or 'yaml'.".format(variant))
 
-    def to_ldac(self, tokenizer, **preprocessing):
+    def to_ldac(self, tokenizer, counter, **preprocessing):
         """Converts the corpus into the LDA-C format.
         
         In the LDA-C corpus format, each document is succinctly represented as
@@ -296,6 +296,12 @@ class Corpus(object):
             tokenizer (:obj:`function`): This must be a function for
                 tokenization. You could use a simple regex function or from
                 `NLTK <http://www.nltk.org>`_.
+            counter (:obj:`function`): This must be a function which counts
+                elements of an iterable. There are various schemes for
+                determining the value that each entry should take. One such
+                scheme is `tf-idf <https://en.wikipedia.org/wiki/Tf-idf>`_.
+                But you can simply use the :class:`Counter` provided in the
+                Python standard library.
             \*\*preprocessing (:obj:`function`, optional): This can be one or
                 even more functions which take the output of your tokenizer
                 function as input. So, you could write a function which counts
@@ -314,7 +320,7 @@ class Corpus(object):
             if preprocessing:
                 for func in preprocessing.values():
                     tokens = func(tokens)
-            frequencies = Counter(tokens)
+            frequencies = counter(tokens)
             instance = [str(len(frequencies))]
             for token in tokens:
                 if token not in vocabulary:
@@ -329,38 +335,75 @@ class Corpus(object):
                 with corpus_ldac.open('a', encoding='utf-8') as file:
                     file.write('\n'.join(instance))
             metadata = metadata.append(meta)
-        
         corpus_vocab = Path(self.target, 'corpus.tokens')
         with corpus_vocab.open('w', encoding='utf-8') as file:
             file.write('\n'.join(vocabulary.keys()))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
-    
-    
-    def to_svmlight(self, tokenizer, **preprocessing):
+    def to_svmlight(self, tokenizer, counter, classes, **preprocessing):
+        """Converts the corpus into the LDA-C format.
+        
+        In the LDA-C corpus format, each document is succinctly represented as
+        a sparse vector of word counts. Each line is of the form:
+
+        ``[M] [term_1]:[count] [term_2]:[count] ...  [term_N]:[count]``
+
+        where ``[M]`` is the number of unique terms in the document, and the
+        ``[count]`` associated with each term is how many times that term
+        appeared in the document. Note that ``[term_1]`` is an integer which
+        indexes the term; it is not a string. This will be in the file
+        ``corpus.ldac``.
+        
+        The vocabulary, exactly one term per line, will be in the file
+        ``corpus.tokens``. Furthermore, metadata extracted from the filenames
+        will be in the file ``corpus.metadata``.
+        
+        Args:
+            tokenizer (:obj:`function`): This must be a function for
+                tokenization. You could use a simple regex function or from
+                `NLTK <http://www.nltk.org>`_.
+            counter (:obj:`function`): This must be a function which counts
+                elements of an iterable. There are various schemes for
+                determining the value that each entry should take. One such
+                scheme is `tf-idf <https://en.wikipedia.org/wiki/Tf-idf>`_.
+                But you can simply use the :class:`Counter` provided in the
+                Python standard library.
+            classes (:obj:
+            \*\*preprocessing (:obj:`function`, optional): This can be one or
+                even more functions which take the output of your tokenizer
+                function as input. So, you could write a function which counts
+                the terms in your corpus and removes the 100 most frequent
+                words.
+
+        Returns:
+            None, but writes three files to disk.
+        
+        """
+        corpus_svmlight = Path(self.target, 'corpus.svmlight')
         vocabulary = dict()
-        instances = list()
         metadata = pd.DataFrame()
-        for meta, text in self.corpus:
+        for meta, text, cl in zip(self.corpus, classes):
             tokens = tokenizer(text)
             if preprocessing:
                 for func in preprocessing.values():
                     tokens = func(tokens)
-            frequencies = Counter(tokens)
-            instance = [str(0)]
+            frequencies = counter(tokens)
+            instance = [str(cl)]
             for token in tokens:
                 if token not in vocabulary:
                     vocabulary[token] = len(vocabulary) + 1
             instance.extend(['{0}:{1}'.format(vocabulary[token],
                                               frequencies[token])
                                               for token in frequencies])
-            instances.append(' '.join(instance))
+            if not corpus_svmlight.exists():
+                with corpus_svmlight.open('w', encoding='utf-8') as file:
+                    file.write('\n'.join(instance))
+            else:
+                with corpus_svmlight.open('a', encoding='utf-8') as file:
+                    file.write('\n'.join(instance))
             stem = Path(meta.index[0]).stem
             meta['stem'] = stem
             metadata = metadata.append(meta)
-        corpus_ldac = Path(self.target, 'corpus.svmlight')
-        with corpus_ldac.open('w', encoding='utf-8') as file:
-            file.write('\n'.join(instances))
         corpus_vocab = Path(self.target, 'corpus.vocab')
         with corpus_vocab.open('w', encoding='utf-8') as file:
             file.write('\n'.join(vocabulary.keys()))
