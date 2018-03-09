@@ -1,20 +1,13 @@
-.. Forpus documentation master file, created by
-   sphinx-quickstart on Thu Mar  8 16:10:17 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+A library for processing plain text corpora to various corpus formats.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Welcome to Forpus's documentation!
-==================================
+In most cases, each NLP tool uses its own idiosyncratic input format. This library helps you to convert a corpus very easy to the desired format.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    It is called Forpus, because you are **for**\ matting a cor\ **pus**, but this is also a genus of parrot in the family Psittacidae.
 
+This library supports **conversions** to
 
+* `JSON <https://www.json.org/index.html>`_
+* David Blei's `LDA-C <https://github.com/blei-lab/lda-c/blob/master/readme.txt>`_
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+See `Getting Started <www.google.de>`_ for how to install Forpus.

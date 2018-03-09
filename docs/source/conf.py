@@ -161,6 +161,10 @@ texinfo_documents = [
 ]
 
 
+html_sidebars = {
+        '**': ['side.html']
+        }
+
 # -- Extension configuration -------------------------------------------------
 
 # -- Options for intersphinx extension ---------------------------------------
