@@ -313,6 +313,8 @@ class Corpus(object):
 
         """
         corpus_ldac = Path(self.target, 'corpus.ldac')
+        if corpus_ldac.exists():
+            corpus_ldac.unlink()
         vocabulary = dict()
         metadata = pd.DataFrame()
         for meta, text in self.corpus:
@@ -330,10 +332,10 @@ class Corpus(object):
                                               for token in frequencies])
             if not corpus_ldac.exists():
                 with corpus_ldac.open('w', encoding='utf-8') as file:
-                    file.write('\n'.join(instance))
+                    file.write(' '.join(instance) + '\n')
             else:
                 with corpus_ldac.open('a', encoding='utf-8') as file:
-                    file.write('\n'.join(instance))
+                    file.write(' '.join(instance) + '\n')
             metadata = metadata.append(meta)
         corpus_vocab = Path(self.target, 'corpus.tokens')
         with corpus_vocab.open('w', encoding='utf-8') as file:
@@ -382,9 +384,13 @@ class Corpus(object):
 
         """
         corpus_svmlight = Path(self.target, 'corpus.svmlight')
+        if corpus_svmlight.exists():
+            corpus_svmlight.unlink()
         vocabulary = dict()
         metadata = pd.DataFrame()
-        for meta, text, cl in zip(self.corpus, classes):
+        for corpus, cl in zip(self.corpus, classes):
+            text = corpus[1]
+            meta = corpus[0]
             tokens = tokenizer(text)
             if preprocessing:
                 for func in preprocessing.values():
@@ -399,14 +405,14 @@ class Corpus(object):
                                               for token in frequencies])
             if not corpus_svmlight.exists():
                 with corpus_svmlight.open('w', encoding='utf-8') as file:
-                    file.write('\n'.join(instance))
+                    file.write(' '.join(instance) + '\n')
             else:
                 with corpus_svmlight.open('a', encoding='utf-8') as file:
-                    file.write('\n'.join(instance))
+                    file.write(' '.join(instance) + '\n')
             stem = Path(meta.index[0]).stem
             meta['stem'] = stem
             metadata = metadata.append(meta)
-        corpus_vocab = Path(self.target, 'corpus.vocab')
+        corpus_vocab = Path(self.target, 'corpus.tokens')
         with corpus_vocab.open('w', encoding='utf-8') as file:
             file.write('\n'.join(vocabulary.keys()))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
