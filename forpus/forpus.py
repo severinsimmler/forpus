@@ -368,7 +368,9 @@ class Corpus(object):
                 scheme is `tf-idf <https://en.wikipedia.org/wiki/Tf-idf>`_.
                 But you can simply use the :class:`Counter` provided in the
                 Python standard library.
-            classes (:obj:
+            classes (:obj:`iterable`): An iterable of the classes of the
+                documents. For instance, +1 as the target value marks a
+                positive example, -1 a negative example respectively.
             \*\*preprocessing (:obj:`function`, optional): This can be one or
                 even more functions which take the output of your tokenizer
                 function as input. So, you could write a function which counts
