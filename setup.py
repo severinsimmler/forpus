@@ -16,7 +16,11 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6'
     ],
-    packages=['forpus']
-    # install_requires
+    packages=['forpus'],
+    install_requires=[
+        'pandas>=0.21.1',
+        'networkx>=2.0',
+        'git+git://github.com/cophi-wue/metadata-toolbox.git'
+        ]
     keywords=['corpora', 'text mining', 'natural language processing']
 )
