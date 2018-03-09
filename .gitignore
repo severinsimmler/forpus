@@ -8,3 +8,4 @@ notebooks/svmlight/*
 notebooks/.ipynb_checkpoints/
 tests/__pycache__/*
 output/*
+.cache/*
