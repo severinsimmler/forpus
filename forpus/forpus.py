@@ -206,9 +206,28 @@ class Corpus(object):
             file.write('\n'.join(vocabulary.keys()))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
-    def to_tei(self):
-        """
-        cf. http://adrien.barbaresi.eu/blog/parsing-converting-lxml-html-
-        tei.html
-        """
-        pass
+    def to_graph(self, tokenizer, variant='gexf', **preprocessing):
+        G = nx.Graph()
+        for meta, text in self.corpus:
+            stem = Path(meta.index[0]).stem
+            G.add_node(stem, **meta.to_dict('record')[0])
+            tokens = tokenizer(text)
+            if preprocessing:
+                for func in preprocessing.values():
+                    tokens = func(tokens)
+            edges = [(token, stem) for token in tokens]
+            G.add_edges_from(edges)
+        if variant == 'gexf':
+            nx.write_gexf(G, Path(self.target, 'corpus.gexf'))
+        elif variant == 'gml':
+            nx.write_gml(G, Path(self.target, 'corpus.gml'))
+        elif variant == 'graphml':
+            nx.write_graphml(G, Path(self.target, 'corpus.graphml'))
+        elif variant == 'pajek':
+            nx.write_pajek(G, Path(self.target, 'corpus.pajek'))
+        elif variant == 'graph6':
+            nx.write_graph6(G, Path(self.target, 'corpus.graph6'))
+        elif variant == 'yaml':
+            nx.write_yaml(G, Path(self.target, 'corpus.yaml'))
+        else:
+            raise ValueError("The variant '{0}' is not supported".format(variant))
