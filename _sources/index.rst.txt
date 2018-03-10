@@ -20,4 +20,4 @@ This library supports **conversions** to
 * Thorsten Joachims' `SVMlight <http://svmlight.joachims.org/>`_
 
 
-See `Getting Started <www.google.de>`_ for how to install Forpus.
+See `Getting Started <gettingstarted.html>`_ for how to install Forpus.
