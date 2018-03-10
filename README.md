@@ -21,8 +21,8 @@ This library supports **conversions** to
 * Thorsten Joachims' [SVM<sup>light<sup>](http://svmlight.joachims.org/)
 
 ## Resources
-* [Forpus website](https://severinsimmler.github.io/forpus)
-* [Forpus API documentation](https://severinsimmler.github.io/forpus/api)
-* [Forpus tutorial](https://severinsimmler.github.io/forpus/tutorial)
+* [Forpus website](https://severinsimmler.github.io/forpus.html)
+* [Forpus API documentation](https://severinsimmler.github.io/forpus/gen/forpus.html)
+* [Forpus tutorial](https://github.com/severinsimmler/forpus/blob/master/notebooks/A%20Walk%20Through%20Forpus.ipynb)
 
-See [Getting Started](https://severinsimmler.github.io/forpus/gettingstarted) for how to install Forpus.
+See [Getting Started](https://severinsimmler.github.io/forpus/gettingstarted.html) for how to install Forpus.
