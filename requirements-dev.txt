@@ -1,5 +1,4 @@
 git+https://github.com/cophi-wue/metadata-toolbox.git
 pytest>=3.3.1
-travis-sphinx>=2.1.0
 nltk>=3.2.5
 -e .
