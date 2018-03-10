@@ -20,9 +20,15 @@ This library supports **conversions** to
 * David Blei's [LDA-C](https://github.com/blei-lab/lda-c/blob/master/readme.txt)
 * Thorsten Joachims' [SVM<sup>light<sup>](http://svmlight.joachims.org/)
 
+## Requirements
+Forpus requires **Python 3.6** and some additional libraries:
+* `pandas`, at least v0.21.1.
+* `networkx`, at least v2.0.
+* `metadata-toolbox`, at least v0.1.
+
+See [Getting Started](https://severinsimmler.github.io/forpus/gettingstarted.html) for how to install Forpus.
+
 ## Resources
 * [Forpus website](https://severinsimmler.github.io/forpus)
 * [Forpus API documentation](https://severinsimmler.github.io/forpus/gen/forpus.html)
 * [Forpus tutorial](https://github.com/severinsimmler/forpus/blob/master/notebooks/A%20Walk%20Through%20Forpus.ipynb)
-
-See [Getting Started](https://severinsimmler.github.io/forpus/gettingstarted.html) for how to install Forpus.
