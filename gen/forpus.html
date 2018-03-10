@@ -283,11 +283,11 @@ words.</dd>
 <dd><p>Converts the corpus into the SVMlight format.</p>
 <p>In the SVMlight corpus format, each document is succinctly represented
 as a sparse vector of word counts. Each line is of the form:</p>
-<p><code class="docutils literal notranslate"><span class="pre">[c]</span> <span class="pre">[feature_1]:[count]</span> <span class="pre">[feature_2]:[count]</span> <span class="pre">...</span> <span class="pre">[feature_N]:[count]</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">[c]</span> <span class="pre">[term_1]:[count]</span> <span class="pre">[term_2]:[count]</span> <span class="pre">...</span> <span class="pre">[term_N]:[count]</span></code></p>
 <p>where <code class="docutils literal notranslate"><span class="pre">[c]</span></code> is the identifier of the instance class (in the context
 of topic modeling this is 0 for all instances), and the <code class="docutils literal notranslate"><span class="pre">[count]</span></code>
 associated with each term is how many times that term appeared in the
-document. Note that <code class="docutils literal notranslate"><span class="pre">[feature_1]</span></code> is an integer which indexes the
+document. Note that <code class="docutils literal notranslate"><span class="pre">[term_1]</span></code> is an integer which indexes the
 term; it is not a string. This will be in the file <code class="docutils literal notranslate"><span class="pre">corpus.svmlight</span></code>.</p>
 <p>The vocabulary, exactly one term per line, will be in the file
 <code class="docutils literal notranslate"><span class="pre">corpus.tokens</span></code>. Furthermore, metadata extracted from the filenames
@@ -328,17 +328,17 @@ words.</dd>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><p style="font-size: 50px;"><b>Forpus</b></p><br>
-<img src="../../../images/logo.png"><br><br>
+<img src="_static/logo.png"><br><br>
 <img src="https://travis-ci.org/severinsimmler/forpus.svg?branch=master">
 <br><br>
 <p style="font-size: 16px;">
-<a href="https://foo.bar.com/">Getting Started</a></h4>
+<a href="gettingstarted.html">Getting Started</a></h4>
 </p>
 <p style="font-size: 16px;">
-<a href="https://foo.bar.com/">Tutorial</a>
+<a href="tutorial.html">Tutorial</a>
 </p>
 <p style="font-size: 16px;">
-<a href="https://foo.bar.com/">API</a>
+<a href="api.html">API</a>
 </p>
         </div>
       </div>
