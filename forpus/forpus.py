@@ -350,12 +350,12 @@ class Corpus(object):
         In the SVMlight corpus format, each document is succinctly represented
         as a sparse vector of word counts. Each line is of the form:
 
-        ``[c] [feature_1]:[count] [feature_2]:[count] ... [feature_N]:[count]``
+        ``[c] [term_1]:[count] [term_2]:[count] ... [term_N]:[count]``
 
         where ``[c]`` is the identifier of the instance class (in the context
         of topic modeling this is 0 for all instances), and the ``[count]``
         associated with each term is how many times that term appeared in the
-        document. Note that ``[feature_1]`` is an integer which indexes the
+        document. Note that ``[term_1]`` is an integer which indexes the
         term; it is not a string. This will be in the file ``corpus.svmlight``.
 
         The vocabulary, exactly one term per line, will be in the file
