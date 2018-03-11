@@ -208,7 +208,7 @@ class Corpus(object):
         document_term_matrix.to_csv(Path(self.target, 'corpus.matrix'))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
-    def to_graph(self, tokenizer, variant='gexf', **preprocessing):
+    def to_graph(self, tokenizer, counter, variant='gexf', **preprocessing):
         """Converst the corpus into a graph.
 
         In mathematics, and more specifically in graph theory, a graph is a
@@ -235,6 +235,13 @@ class Corpus(object):
             tokenizer (:obj:`function`): This must be a function for
                 tokenization. You could use a simple regex function or from
                 `NLTK <http://www.nltk.org>`_.
+            counter (:obj:`function`): This must be a function which counts
+                elements of an iterable. There are various schemes for
+                determining the value that each entry in the matrix should
+                take. One such scheme is
+                `tf-idf <https://en.wikipedia.org/wiki/Tf-idf>`_. But you can
+                simply use the :class:`Counter` provided in the Python
+                standard library.
             variant (:obj:`str`): This must be the kind of XML foramt you want
                 to convert the graph to. Possible values are ``gexf``, ``gml``,
                 ``graphml``, ``pajek``, ``graph6``, and ``yaml``.
