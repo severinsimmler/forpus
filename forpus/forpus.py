@@ -260,11 +260,12 @@ class Corpus(object):
             stem = Path(meta.index[0]).stem
             G.add_node(stem, **meta.to_dict('record')[0])
             tokens = tokenizer(text)
+            frequencies = counter(tokens)
             if preprocessing:
                 for func in preprocessing.values():
                     tokens = func(tokens)
-            edges = [(token, stem) for token in tokens]
-            G.add_edges_from(edges)
+            for token in tokens:
+                G.add_edge(token, stem, frequency=frequencies[token])
         if variant == 'gexf':
             nx.write_gexf(G, Path(self.target, 'corpus.gexf'))
         elif variant == 'gml':
