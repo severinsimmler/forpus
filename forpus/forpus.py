@@ -248,7 +248,7 @@ class Corpus(object):
             None, but writes the formatted corpus to disk.
 
         """
-        G = nx.Graph()
+        G = nx.DiGraph()
         for meta, text in self.corpus:
             stem = Path(meta.index[0]).stem
             G.add_node(stem, **meta.to_dict('record')[0])
