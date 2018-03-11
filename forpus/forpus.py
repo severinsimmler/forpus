@@ -217,8 +217,9 @@ class Corpus(object):
         (*objects*) for each document (basically the filename), as well as for
         each type in the corpus. Each document node has one or more attributes
         based on the metadata extracted from the filenames. If a type appears
-        in a document, there will be an edge between document node and type
-        node.
+        in a document, there will be an directed edge between document node and
+        type node. Each edge has an attribute with type frequency within the
+        document.
 
         You can convert the graph to various graph-specific XML formats:
             * `GEXF <https://gephi.org/gexf/format/>`_
