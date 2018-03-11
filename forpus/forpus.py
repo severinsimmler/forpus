@@ -208,7 +208,7 @@ class Corpus(object):
         document_term_matrix.to_csv(Path(self.target, 'corpus.matrix'))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
-    def to_graph(self, tokenizer, variant='gexf', **preprocessing):
+    def to_graph(self, tokenizer, counter, variant='gexf', **preprocessing):
         """Converst the corpus into a graph.
 
         In mathematics, and more specifically in graph theory, a graph is a
@@ -217,8 +217,9 @@ class Corpus(object):
         (*objects*) for each document (basically the filename), as well as for
         each type in the corpus. Each document node has one or more attributes
         based on the metadata extracted from the filenames. If a type appears
-        in a document, there will be an edge between document node and type
-        node.
+        in a document, there will be an directed edge between document node and
+        type node. Each edge has an attribute with type frequency within the
+        document.
 
         You can convert the graph to various graph-specific XML formats:
             * `GEXF <https://gephi.org/gexf/format/>`_
@@ -234,6 +235,13 @@ class Corpus(object):
             tokenizer (:obj:`function`): This must be a function for
                 tokenization. You could use a simple regex function or from
                 `NLTK <http://www.nltk.org>`_.
+            counter (:obj:`function`): This must be a function which counts
+                elements of an iterable. There are various schemes for
+                determining the value that each entry in the matrix should
+                take. One such scheme is
+                `tf-idf <https://en.wikipedia.org/wiki/Tf-idf>`_. But you can
+                simply use the :class:`Counter` provided in the Python
+                standard library.
             variant (:obj:`str`): This must be the kind of XML foramt you want
                 to convert the graph to. Possible values are ``gexf``, ``gml``,
                 ``graphml``, ``pajek``, ``graph6``, and ``yaml``.
@@ -247,16 +255,17 @@ class Corpus(object):
             None, but writes the formatted corpus to disk.
 
         """
-        G = nx.Graph()
+        G = nx.DiGraph()
         for meta, text in self.corpus:
             stem = Path(meta.index[0]).stem
             G.add_node(stem, **meta.to_dict('record')[0])
             tokens = tokenizer(text)
+            frequencies = counter(tokens)
             if preprocessing:
                 for func in preprocessing.values():
                     tokens = func(tokens)
-            edges = [(token, stem) for token in tokens]
-            G.add_edges_from(edges)
+            for token in tokens:
+                G.add_edge(token, stem, frequency=frequencies[token])
         if variant == 'gexf':
             nx.write_gexf(G, Path(self.target, 'corpus.gexf'))
         elif variant == 'gml':

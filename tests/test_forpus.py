@@ -99,6 +99,7 @@ class TestGraph(TestCase):
         corpus = forpus.Corpus(source='corpus',
                                target='output')
         corpus.to_graph(tokenizer=tokenizer,
+                        counter=Counter,
                         variant='gexf',
                         drop_stopwords=drop_stopwords)
         self.assertTrue(self.generated_file.exists())
@@ -108,6 +109,7 @@ class TestGraph(TestCase):
                                target='output')
         with self.assertRaises(ValueError):
             corpus.to_graph(tokenizer=tokenizer,
+                            counter=Counter,
                             variant='notsupported')
 
     def test_third_party_tokenizer(self):
