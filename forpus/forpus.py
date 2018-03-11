@@ -315,7 +315,7 @@ class Corpus(object):
         corpus_ldac = Path(self.target, 'corpus.ldac')
         if corpus_ldac.exists():
             corpus_ldac.unlink()
-        vocabulary = dict()
+        vocabulary = pd.Series()
         metadata = pd.DataFrame()
         for meta, text in self.corpus:
             tokens = tokenizer(text)
@@ -341,7 +341,7 @@ class Corpus(object):
             metadata = metadata.append(meta)
         corpus_vocab = Path(self.target, 'corpus.tokens')
         with corpus_vocab.open('w', encoding='utf-8') as file:
-            file.write('\n'.join(vocabulary.keys()))
+            file.write('\n'.join(vocabulary.index))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
 
     def to_svmlight(self, tokenizer, counter, classes, **preprocessing):
@@ -388,7 +388,7 @@ class Corpus(object):
         corpus_svmlight = Path(self.target, 'corpus.svmlight')
         if corpus_svmlight.exists():
             corpus_svmlight.unlink()
-        vocabulary = dict()
+        vocabulary = pd.Series()
         metadata = pd.DataFrame()
         for corpus, cl in zip(self.corpus, classes):
             text = corpus[1]
@@ -416,5 +416,5 @@ class Corpus(object):
             metadata = metadata.append(meta)
         corpus_vocab = Path(self.target, 'corpus.tokens')
         with corpus_vocab.open('w', encoding='utf-8') as file:
-            file.write('\n'.join(vocabulary.keys()))
+            file.write('\n'.join(vocabulary.index))
         metadata.to_csv(Path(self.target, 'corpus.metadata'))
