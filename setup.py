@@ -8,7 +8,7 @@ DESCRIPTION = 'Converts a plain text corpus into a NLP-specific corpus format.'
 URL = 'https://github.com/severinsimmler/forpus'
 EMAIL = 'severin.simmler@stud-mail.uni-wuerzburg.de'
 AUTHOR = 'Severin Simmler'
-REQUIRES_PYTHON = '>=3.4.0'
+REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.0.3'
 REQUIRED = [
      'pandas>=0.21.1',
