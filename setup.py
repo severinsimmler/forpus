@@ -9,7 +9,7 @@ URL = 'https://github.com/severinsimmler/forpus'
 EMAIL = 'severin.simmler@stud-mail.uni-wuerzburg.de'
 AUTHOR = 'Severin Simmler'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.0.3'
+VERSION = '0.0.4'
 REQUIRED = [
      'pandas>=0.21.1',
      'networkx>=2.0'
