@@ -25,3 +25,5 @@ Check out this example:
 >>> corpus.to_json()
 
 """
+
+from forpus.forpus import Corpus
