@@ -15,9 +15,6 @@ REQUIRED = [
      'networkx>=2.0'
 ]
 
-about = {}
-about['__version__'] = VERSION
-
 setup(
     name=NAME,
     version=about['__version__'],
@@ -27,9 +24,6 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     py_modules=['forpus'],
-    entry_points={
-        'console_scripts': ['mycli=forpus:cli'],
-    },
     install_requires=REQUIRED,
     classifiers=[
         'Programming Language :: Python :: 3',
