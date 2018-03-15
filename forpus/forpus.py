@@ -114,7 +114,7 @@ class Corpus(object):
                     metadata = fname2metadata(fname, self.pattern)
                 except ValueError:
                     metadata = pd.DataFrame([file.stem], columns=['stem'], index=[fname])
-                yield fname2metadata(fname, self.pattern), document.read()
+                yield metadata, document.read()
 
     def to_json(self, onefile=True):
         """Converts the corpus into JSON.
