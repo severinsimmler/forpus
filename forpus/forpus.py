@@ -110,6 +110,10 @@ class Corpus(object):
         for file in p.glob('*.txt'):
             with file.open('r', encoding='utf-8') as document:
                 fname = str(file)
+                try:
+                    metadata = fname2metadata(fname, self.pattern)
+                except ValueError:
+                    metadata = pd.DataFrame([file.stem], columns=['stem'], index=[fname])
                 yield fname2metadata(fname, self.pattern), document.read()
 
     def to_json(self, onefile=True):
