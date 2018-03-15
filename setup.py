@@ -17,7 +17,7 @@ REQUIRED = [
 
 setup(
     name=NAME,
-    version=about['__version__'],
+    version=VERSION,
     description=DESCRIPTION,
     author=AUTHOR,
     author_email=EMAIL,
