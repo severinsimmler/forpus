@@ -34,13 +34,6 @@ class TestJSON(TestCase):
         mary = Path('output', 'mary_doc3.json')
         self.assertTrue(peter.exists() and paul.exists() and mary.exists())
     
-    def test_metadata_exception(self):
-        corpus = forpus.Corpus(source='corpus',
-                               target='output',
-                               fname_pattern='{author}/{title}')
-        with self.assertRaises(ValueError):
-            corpus.to_json()
-    
     def tearDown(self):
         for file in self.output.iterdir():
             file.unlink()
